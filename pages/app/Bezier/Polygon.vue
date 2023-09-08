@@ -120,6 +120,8 @@
                        :onDrawSpeechBubble="onDrawSpeechBubble"
                        :isDrawingSpeechBubble="isDrawingSpeechBubble"
                        @update:isDrawingSpeechBubble="(newVal) => isDrawingSpeechBubble = newVal"
+                       :isResetBoundingBox="isResetBoundingBox"
+                       @update:isResetBoundingBox="(newVal) => isResetBoundingBox = newVal"
                        :isReCalcBoundingBox="isReCalcBoundingBox"/>
   <!--END BOUNDING BOX-->
 </template>
@@ -136,16 +138,19 @@ interface IProps {
   isStageEnded: boolean[],
   targetPolygonIndex: number,
   isDrawingSpeechBubble?: boolean
+  isResetBoundingBox?: boolean
 }
 interface IEmits {
   (e: 'update:polygons', value: CommonModule.Polygon[]): void
   (e: 'update:polygon', value: CommonModule.Polygon): void
   (e: 'update:targetPolygonIndex', value: number | null): void
   (e: 'update:isDrawingSpeechBubble', value: boolean): void
+  (e: 'update:isResetBoundingBox', value: boolean): void
 }
 const emits = defineEmits<IEmits>()
 const props = defineProps<IProps>()
 const targetPolygonIndex = useVModel(props, 'targetPolygonIndex', emits)
+const isResetBoundingBox = useVModel(props, 'isResetBoundingBox', emits)
 const polygon = useVModel(props, 'polygon', emits)
 const polygons = useVModel(props, 'polygons', emits)
 
@@ -195,6 +200,7 @@ const handleMouseUp = () => {
   isMoveAPolygon.value = false
 
   const isAutoCreate = polygon.value?.isAutoCreate
+
   if (!(isAutoCreate && props.onDrawSpeechBubble)) {
     updateNewPosition();
   } else {
@@ -305,9 +311,9 @@ const updateNewPosition = () => {
   fixedPolygonPosition.value.x = 0;
   fixedPolygonPosition.value.y = 0;
   polygon.value.nodes.forEach((node) => {
+    node.rect.x += fixedPolygonPosition.value.spaceX;
+    node.rect.y += fixedPolygonPosition.value.spaceY;
     if (node.lines.length && node.circles.length) {
-      node.rect.x += fixedPolygonPosition.value.spaceX;
-      node.rect.y += fixedPolygonPosition.value.spaceY;
       for (let i = 0; i < node.lines.length; i++) {
         node.lines[i].x1 = node.rect.x;
         node.lines[i].y1 = node.rect.y;
@@ -538,18 +544,18 @@ const moveAPolygon = (e: any) => {
     y: e.offsetY,
   };
 
-  const boundingBoxEl: HTMLElement = document.getElementById('bounding-box')
-  const workspace: HTMLElement = document.getElementById('workspace')
-  if (!(boundingBoxEl && workspace)) return
-  let elVal = JSON.parse(JSON.stringify(boundingBoxEl.getBoundingClientRect()))
-  const boundingEl = JSON.parse(JSON.stringify(workspace.getBoundingClientRect()))
-  console.log(elVal.right, boundingEl.right)
-  if (elVal.right > boundingEl.right - 3) {
-    fixedPolygonPosition.value.x += Math.abs(elVal.right - boundingEl.right - 3)
-  }
-  if (elVal.bottom > boundingEl.bottom - 3) {
-    fixedPolygonPosition.value.spaceY -= Math.abs(elVal.right - boundingEl.right)
-  }
+  // const boundingBoxEl: HTMLElement = document.getElementById('bounding-box')
+  // const workspace: HTMLElement = document.getElementById('workspace')
+  // if (!(boundingBoxEl && workspace)) return
+  // let elVal = JSON.parse(JSON.stringify(boundingBoxEl.getBoundingClientRect()))
+  // const boundingEl = JSON.parse(JSON.stringify(workspace.getBoundingClientRect()))
+  // console.log(elVal.right, boundingEl.right)
+  // if (elVal.right > boundingEl.right - 3) {
+  //   fixedPolygonPosition.value.x += Math.abs(elVal.right - boundingEl.right - 3)
+  // }
+  // if (elVal.bottom > boundingEl.bottom - 3) {
+  //   fixedPolygonPosition.value.spaceY -= Math.abs(elVal.right - boundingEl.right)
+  // }
 
   if (fixedPolygonPosition.value.x) fixedPolygonPosition.value.spaceX = pointerPosition.x - fixedPolygonPosition.value.x;
   if (fixedPolygonPosition.value.y) fixedPolygonPosition.value.spaceY = pointerPosition.y - fixedPolygonPosition.value.y;

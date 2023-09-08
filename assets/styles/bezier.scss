@@ -8,7 +8,6 @@ body {
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
   background-color: var(--background);
-  overflow: hidden;
 }
 img {
   object-fit: contain;
@@ -81,8 +80,8 @@ img {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: calc(100vw - 500px);
-  height: calc(100vh - 200px);
+  width: calc(100vw - 200px);
+  height: calc(100vh - 80px);
   border: 1px solid salmon;
 }
 

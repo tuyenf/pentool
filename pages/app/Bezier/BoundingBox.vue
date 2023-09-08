@@ -50,16 +50,19 @@ interface IProps {
   onDrawSpeechBubble: boolean,
   isReCalcBoundingBox: boolean,
   isDrawingSpeechBubble: boolean,
+  isResetBoundingBox: boolean,
 }
 interface IEmits {
   (e: 'update:targetPolygonIndex', value: number | null): void
   (e: 'update:polygons', value: CommonModule.Polygon[]): void
   (e: 'update:polygon', value: CommonModule.Polygon): void
   (e: 'update:isDrawingSpeechBubble', value: boolean): void
+  (e: 'update:isResetBoundingBox', value: boolean): void
 }
 const emits = defineEmits<IEmits>()
 const props = defineProps<IProps>()
 const targetPolygonIndex = useVModel(props, 'targetPolygonIndex', emits)
+const isResetBoundingBox = useVModel(props, 'isResetBoundingBox', emits)
 const polygons = useVModel(props, 'polygons', emits)
 const polygon = useVModel(props, 'polygon', emits)
 
@@ -741,6 +744,11 @@ const autoResizePolygon = () => {
     autoUpdateSegments(node.rect, i, fixedNodes);
   });
 };
+const resetBoundingBox = () => {
+  boundingBox.value.handlers.length = 0
+  boundingBox.value.segments.length = 0
+  isResetBoundingBox.value = false
+}
 /*
 * Watch */
 watch(() => props.isReCalcBoundingBox, (val) => {
@@ -749,6 +757,11 @@ watch(() => props.isReCalcBoundingBox, (val) => {
     calcSegmentBoudingBox()
   }
 }, { deep: true})
+watch(() => isResetBoundingBox, (val) => {
+  if (val) {
+    resetBoundingBox()
+  }
+}, {deep: true})
 watch(() => props.isDrawingSpeechBubble, (val) => {
   if (val) {
     drawSpeechBubble()

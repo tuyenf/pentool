@@ -31,6 +31,7 @@
                         v-model:polygon="polygons[targetPolygonIndex]"
                         :isDrawingSpeechBubble="isDrawingSpeechBubble"
                         :isStageEnded="isStageEnded"
+                        v-model:isResetBoundingBox="isResetBoundingBox"
         />
         <!--END BEZIER POLYGON-->
       </svg>
@@ -84,6 +85,7 @@ const virtualRectangle = ref<CommonModule.VirtualRectangle>({
 const isAltPress = ref<boolean>(false)
 const isDrawing = ref<boolean>(false)
 const isDrawingSpeechBubble = ref<boolean>(false)
+const isResetBoundingBox = ref<boolean>(false)
 /*
  * Hooks */
 onMounted(() => {
@@ -460,6 +462,7 @@ const deletePolygon = () => {
   isStageEnded.value.splice(targetPolygonIndex.value, 1);
   isStageStarted.value = true;
   targetPolygonIndex.value--;
+  isResetBoundingBox.value = true
 };
 /*
 /*
