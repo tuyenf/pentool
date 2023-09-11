@@ -58,6 +58,7 @@ interface IEmits {
   (e: 'update:polygon', value: CommonModule.Polygon): void
   (e: 'update:isDrawingSpeechBubble', value: boolean): void
   (e: 'update:isResetBoundingBox', value: boolean): void
+  (e: 'update:boundingBox', value: CommonModule.BoundingBox): void
 }
 const emits = defineEmits<IEmits>()
 const props = defineProps<IProps>()
@@ -94,17 +95,7 @@ const movementLimit = ref<CommonModule.MovementLimit>()
  * Hooks */
 onMounted(() => {
   nextTick(() => {
-    const svg = document.querySelector('svg')
-    svg.addEventListener('mouseup', handleMouseUp)
-    // const workspace: HTMLElement = document.getElementById('workspace')
-    // if (!workspace) return
-    // const wrapper = workspace.getBoundingClientRect()
-    // movementLimit.value = {
-    //   minX: 4,
-    //   minY: 4,
-    //   maxX: wrapper.width - 6,
-    //   maxY: wrapper.height - 6,
-    // }
+    document.addEventListener('mouseup', handleMouseUp)
   })
 })
 /*
@@ -199,9 +190,18 @@ const calcSegmentBoudingBox = () => {
 };
 const resizeBoundingBox = (e: any) => {
   isMoveAPolygon.value = false;
+  const workspaceEl: HTMLElement = document.getElementById('workspace')
+  if (!workspaceEl) return
+  const workspacePosition = workspaceEl.getBoundingClientRect()
+  const limits: CommonModule.Limit = {
+    minX: 0,
+    maxX: workspacePosition.right - workspacePosition.left - a / 2,
+    minY: 0,
+    maxY: workspacePosition.bottom - workspacePosition.top - b / 2
+  }
   const newPosition: CommonModule.Point = {
-    x: e.offsetX,
-    y: e.offsetY,
+    x: Math.max(limits.minX, Math.min(e.clientX || e.offsetX, limits.maxX)),
+    y: Math.max(limits.minY, Math.min(e.clientY || e.offsetY, limits.maxY)),
   };
   let spaceX = handlerIndex.value > 0
       ? (newPosition.x - boundingBox.value.handlers[handlerIndex.value - 1].x) / 2
@@ -755,6 +755,7 @@ watch(() => props.isReCalcBoundingBox, (val) => {
   if (val) {
     createBoundingBox()
     calcSegmentBoudingBox()
+    emits('update:boundingBox', boundingBox.value)
   }
 }, { deep: true})
 watch(() => isResetBoundingBox, (val) => {

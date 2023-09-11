@@ -79,9 +79,6 @@
             :cx="circle.x"
             :cy="circle.y"
             :r="r"
-            @click.alt.exact="
-                  handleMoveControler($event, i, index, ci, true)
-                "
             @mousedown.self="handleMoveControler($event, i, index, ci)"
             :class="{
                   hide: i !== targetPolygonIndex || !(onPenTool || onDirectSelectionTool),
@@ -122,11 +119,16 @@
                        @update:isDrawingSpeechBubble="(newVal) => isDrawingSpeechBubble = newVal"
                        :isResetBoundingBox="isResetBoundingBox"
                        @update:isResetBoundingBox="(newVal) => isResetBoundingBox = newVal"
-                       :isReCalcBoundingBox="isReCalcBoundingBox"/>
+                       :isReCalcBoundingBox="isReCalcBoundingBox"
+                       @update:boundingBox="(newVal) => boundingBox = newVal"
+  />
   <!--END BOUNDING BOX-->
 </template>
 <script lang="ts" setup>
 import BezierBoundingBox from "~/pages/app/Bezier/BoundingBox.vue"
+import {useKeyModifier} from "@vueuse/core";
+import {KEY_BOARD} from "~/lib/utils/contants";
+import {getMinMaxValue} from "~/lib/utils/global";
 
 interface IProps {
   polygons: CommonModule.Polygon[],
@@ -153,6 +155,10 @@ const targetPolygonIndex = useVModel(props, 'targetPolygonIndex', emits)
 const isResetBoundingBox = useVModel(props, 'isResetBoundingBox', emits)
 const polygon = useVModel(props, 'polygon', emits)
 const polygons = useVModel(props, 'polygons', emits)
+const boundingBox = ref<CommonModule.BoundingBox>({
+  handlers: [],
+  segments: [],
+});
 
 const r = 4;
 const a = 8;
@@ -170,13 +176,13 @@ const isReCalcBoundingBox = ref<boolean>(false);
 const mouseDownEvent = ref(null);
 const mousePressEvent = ref(null);
 const isMousePress = ref<boolean>(false);
-const isAltPress = ref<boolean>(false)
 const fixedPolygonPosition = ref({
   x: 0,
   y: 0,
   spaceX: 0,
   spaceY: 0,
 });
+const isAlt = useKeyModifier(KEY_BOARD.ALT)
 
 onMounted(() => {
   nextTick(() => {
@@ -196,7 +202,6 @@ const handleMouseUp = () => {
   isMoveAnAnchorPoint.value = false;
   isMoveAController.value = false;
   editOneController.value = false;
-  isAltPress.value = false
   isMoveAPolygon.value = false
 
   const isAutoCreate = polygon.value?.isAutoCreate
@@ -230,9 +235,12 @@ const activePolygon = (i: number) => {
   isReCalcBoundingBox.value = true
   targetPolygonIndex.value = polygons.value.length - 1
 };
-const handleMoveControler = (event: MouseEvent, polygonId: number, nodeId: number, circleId: number, isOne?: boolean,) => {
+watch(isAlt, (val) => {
+  if (val) editOneController.value = true;
+  else editOneController.value = false
+})
+const handleMoveControler = (event: MouseEvent, polygonId: number, nodeId: number, circleId: number) => {
   if (!props.onDirectSelectionTool || targetPolygonIndex.value == null) return;
-  if (isOne) editOneController.value = true;
   nodeIndex.value = nodeId;
   targetPolygonIndex.value = polygonId;
   circleIndex.value = circleId;
@@ -528,12 +536,12 @@ const moveAController = (e: MouseEvent) => {
     }
   }
 };
-const moveAPolygon = (e: any) => {
+const moveAPolygon = async (e: any) => {
   const polygonElement: HTMLElement = document.getElementById(
       `polygon-${targetPolygonIndex.value}`,
   );
   if (!polygonElement.contains(e.target)) {
-    handleMouseUp()
+    await handleMouseUp()
     isReCalcBoundingBox.value = true
     return
   }
@@ -543,31 +551,30 @@ const moveAPolygon = (e: any) => {
     x: e.offsetX,
     y: e.offsetY,
   };
+  const workspaceElement = document.getElementById('workspace')
+  if (!workspaceElement) return;
+  const workspacePosition = workspaceElement.getBoundingClientRect()
 
-  // const boundingBoxEl: HTMLElement = document.getElementById('bounding-box')
-  // const workspace: HTMLElement = document.getElementById('workspace')
-  // if (!(boundingBoxEl && workspace)) return
-  // let elVal = JSON.parse(JSON.stringify(boundingBoxEl.getBoundingClientRect()))
-  // const boundingEl = JSON.parse(JSON.stringify(workspace.getBoundingClientRect()))
-  // console.log(elVal.right, boundingEl.right)
-  // if (elVal.right > boundingEl.right - 3) {
-  //   fixedPolygonPosition.value.x += Math.abs(elVal.right - boundingEl.right - 3)
-  // }
-  // if (elVal.bottom > boundingEl.bottom - 3) {
-  //   fixedPolygonPosition.value.spaceY -= Math.abs(elVal.right - boundingEl.right)
-  // }
+  const limits: CommonModule.Limit = {
+    minX: getMinMaxValue(boundingBox.value.handlers, true, "", "x") * -1,
+    maxX: (workspacePosition.right - workspacePosition.left - a / 2) - getMinMaxValue(boundingBox.value.handlers, false, "", "x"),
+    minY: getMinMaxValue(boundingBox.value.handlers, true, "", "y") * -1,
+    maxY: (workspacePosition.bottom - workspacePosition.top - b / 2) - getMinMaxValue(boundingBox.value.handlers, false, "", "y")
+  }
+  const toLeft = pointerPosition.x - fixedPolygonPosition.value.x < 0
+  const toTop = pointerPosition.y - fixedPolygonPosition.value.y < 0
+  if (fixedPolygonPosition.value.x) fixedPolygonPosition.value.spaceX = toLeft ? Math.max(pointerPosition.x - fixedPolygonPosition.value.x, limits.minX) : Math.min(pointerPosition.x - fixedPolygonPosition.value.x, limits.maxX)
+  if (fixedPolygonPosition.value.y) fixedPolygonPosition.value.spaceY = toTop ? Math.max(pointerPosition.y - fixedPolygonPosition.value.y, limits.minY) : Math.min(pointerPosition.y - fixedPolygonPosition.value.y, limits.maxY)
 
-  if (fixedPolygonPosition.value.x) fixedPolygonPosition.value.spaceX = pointerPosition.x - fixedPolygonPosition.value.x;
-  if (fixedPolygonPosition.value.y) fixedPolygonPosition.value.spaceY = pointerPosition.y - fixedPolygonPosition.value.y;
   if (!fixedPolygonPosition.value.x) fixedPolygonPosition.value.x = pointerPosition.x;
   if (!fixedPolygonPosition.value.y) fixedPolygonPosition.value.y = pointerPosition.y;
 
   if (!fixedPolygonPosition.value.spaceX && !fixedPolygonPosition.value.spaceY) return;
   const polygon: HTMLElement = document.getElementById(`polygon-${targetPolygonIndex.value}`);
-  const boundingBox: HTMLElement = document.getElementById('bounding-box')
-  if (!(polygon && boundingBox)) return;
+  const boundingBoxEl: HTMLElement = document.getElementById('bounding-box')
+  if (!(polygon && boundingBoxEl)) return;
   polygon.style.transform = `translate(${fixedPolygonPosition.value.spaceX}px, ${fixedPolygonPosition.value.spaceY}px)`;
-  boundingBox.style.transform = `translate(${fixedPolygonPosition.value.spaceX}px, ${fixedPolygonPosition.value.spaceY}px)`;
+  boundingBoxEl.style.transform = `translate(${fixedPolygonPosition.value.spaceX}px, ${fixedPolygonPosition.value.spaceY}px)`;
 };
 const pointToString = (nodes) => {
   return nodes.map((point) => `${point.rect.x},${point.rect.y}`).join(" ");

@@ -49,6 +49,7 @@
 import {BUBBLE_TEMPLATES, KEY_BOARD} from "~/lib/utils/contants";
 import BezierPanel from "~/pages/app/Bezier/Panel.vue";
 import BezierPolygon from "~/pages/app/Bezier/Polygon.vue";
+import {useKeyModifier} from "@vueuse/core";
 
 const route = useRoute();
 
@@ -82,15 +83,16 @@ const virtualRectangle = ref<CommonModule.VirtualRectangle>({
   width: 0,
   height: 0
 })
-const isAltPress = ref<boolean>(false)
 const isDrawing = ref<boolean>(false)
 const isDrawingSpeechBubble = ref<boolean>(false)
 const isResetBoundingBox = ref<boolean>(false)
+const isAlt = useKeyModifier(KEY_BOARD.ALT)
 /*
  * Hooks */
 onMounted(() => {
   onPenTool.value = true
   nextTick(() => {
+    if (!workspace.value) return
     const wrapper = workspace.value.getBoundingClientRect()
     movementLimit.value = {
       minX: 4,
@@ -176,7 +178,6 @@ const handleMouseUp = () => {
   clearTimeout(mousePressEvent.value);
   isMousePress.value = false;
   handlerIndex.value = null;
-  isAltPress.value = false
   isStageMove.value = false
 }
 const handleMouseDown = (event: MouseEvent) => {
@@ -185,16 +186,8 @@ const handleMouseDown = (event: MouseEvent) => {
   mouseDownEvent.value = setTimeout(() => {
     isMousePress.value = true;
     document.addEventListener("mousemove", curveStarted);
-    document.addEventListener("keydown", (event: KeyboardEvent) => {
-      if (event.key === KEY_BOARD.ALT) {
-        isAltPress.value = true
-        if (!targetPoint.value && polygons.value[targetPolygonIndex.value].nodes.length > 1) return
-        polygons.value[targetPolygonIndex.value].nodes[targetPoint.value].isZigzag = true
-      }
-    });
   }, 150);
 };
-
 /* Drawing
 * */
 const stageStarted = (e: MouseEvent, isEnd?: boolean) => {
@@ -327,7 +320,7 @@ const curveStarted = (e: MouseEvent) => {
     y2: controlPoint2.y,
   };
 
-  if (isAltPress.value && !targetPoint.value) polygons.value[polygons.value.length - 1].nodes[0].isZigzag = true
+  if (isAlt.value && !targetPoint.value) polygons.value[polygons.value.length - 1].nodes[0].isZigzag = true
   if (!polygons.value[polygons.value.length - 1].nodes[targetPoint.value].isZigzag) {
     polygons.value[polygons.value.length - 1].nodes[targetPoint.value].circles = [controlPoint1, controlPoint2];
     polygons.value[polygons.value.length - 1].nodes[targetPoint.value].lines = [line1, line2];
@@ -467,6 +460,12 @@ const deletePolygon = () => {
 /*
 /*
 * Watch */
+watch(isAlt, (val) => {
+  if (val && isDrawing.value) {
+    if (!targetPoint.value && polygons.value[targetPolygonIndex.value].nodes.length > 1) return
+    polygons.value[targetPolygonIndex.value].nodes[targetPoint.value].isZigzag = true
+  }
+})
 watch(isStageStarted, (val) => {
   if (val) {
     document.addEventListener("dblclick", ($event) => {

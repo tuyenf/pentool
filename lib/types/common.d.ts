@@ -76,4 +76,10 @@ declare namespace CommonModule {
     width: number,
     height: number
   }
+  interface Limit {
+    minX: number,
+    maxX: number,
+    minY: number
+    maxY: number
+  }
 }
