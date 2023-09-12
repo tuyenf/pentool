@@ -200,9 +200,10 @@ const resizeBoundingBox = (e: any) => {
     maxY: workspacePosition.bottom - workspacePosition.top - b / 2
   }
 
+
   const newPosition: CommonModule.Point = {
-    x: Math.max(limits.minX, Math.min(e.offsetX, limits.maxX)),
-    y: Math.max(limits.minY, Math.min(e.offsetY, limits.maxY)),
+    x: Math.max(limits.minX, Math.min(e.clientX ? e.clientX - workspacePosition.left : e.offsetX, limits.maxX)),
+    y: Math.max(limits.minY, Math.min(e.clientY ? e.clientY - workspacePosition.top : e.offsetY, limits.maxY)),
   };
   let spaceX = handlerIndex.value > 0
       ? (newPosition.x - boundingBox.value.handlers[handlerIndex.value - 1].x) / 2
@@ -508,9 +509,9 @@ const updateAutoPosition = () => {
   fixedPolygonPosition.value.x = 0;
   fixedPolygonPosition.value.y = 0;
   polygon.value.nodes.forEach((node) => {
-    node.rect.x += fixedPolygonPosition.value.spaceX;
-    node.rect.y += fixedPolygonPosition.value.spaceY;
     if (node.lines.length && node.circles.length) {
+      node.rect.x += fixedPolygonPosition.value.spaceX;
+      node.rect.y += fixedPolygonPosition.value.spaceY;
       for (let i = 0; i < node.lines.length; i++) {
         node.lines[i].x1 = node.rect.x;
         node.lines[i].y1 = node.rect.y;
