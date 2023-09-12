@@ -199,9 +199,10 @@ const resizeBoundingBox = (e: any) => {
     minY: 0,
     maxY: workspacePosition.bottom - workspacePosition.top - b / 2
   }
+
   const newPosition: CommonModule.Point = {
-    x: Math.max(limits.minX, Math.min(e.clientX || e.offsetX, limits.maxX)),
-    y: Math.max(limits.minY, Math.min(e.clientY || e.offsetY, limits.maxY)),
+    x: Math.max(limits.minX, Math.min(e.offsetX, limits.maxX)),
+    y: Math.max(limits.minY, Math.min(e.offsetY, limits.maxY)),
   };
   let spaceX = handlerIndex.value > 0
       ? (newPosition.x - boundingBox.value.handlers[handlerIndex.value - 1].x) / 2

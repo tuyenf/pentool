@@ -225,13 +225,13 @@ const stageStarted = (e: MouseEvent, isEnd?: boolean) => {
     createNewPolygon.value = false;
   } else if (isEnd && nodes && segments) {
     createNewPolygon.value = true;
-    nodes.pop()
-    segments.pop()
+    nodes.splice(-2)
+    segments.splice(-2)
     const fixedNodes = JSON.parse(JSON.stringify(nodes))
     segments.push({
       start: fixedNodes[fixedNodes.length - 1].rect,
       end: nodes[0].rect,
-      controlPoint1: fixedNodes[fixedNodes.length - 1].rect,
+      controlPoint1: fixedNodes[fixedNodes.length - 1].circles[0] || fixedNodes[fixedNodes.length - 1].rect,
       controlPoint2: nodes[0].rect,
     });
     nodes[0].isZigzag = true
