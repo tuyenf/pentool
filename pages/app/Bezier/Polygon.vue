@@ -204,13 +204,7 @@ const handleMouseUp = () => {
   editOneController.value = false;
   isMoveAPolygon.value = false
 
-  const isAutoCreate = polygon.value?.isAutoCreate
-
-  if (!(isAutoCreate && props.onDrawSpeechBubble)) {
-    updateNewPosition();
-  } else {
-    updateAutoPosition()
-  }
+  updateNewPosition();
   if (!props.isStageEnded[targetPolygonIndex.value] || polygon.value.nodes[0].isZigzag) return
   if (polygon.value.nodes[0].circles[1] === polygon.value.nodes[0].rect) {
     polygon.value.nodes[0].isZigzag = true
@@ -337,84 +331,6 @@ const updateNewPosition = () => {
     if (i === polygon.value.segments?.length - 1) {
       s.start.x += fixedPolygonPosition.value.spaceX;
       s.start.y += fixedPolygonPosition.value.spaceY;
-    } else {
-      s.start.x += fixedPolygonPosition.value.spaceX;
-      s.start.y += fixedPolygonPosition.value.spaceY;
-
-      s.end.x += fixedPolygonPosition.value.spaceX;
-      s.end.y += fixedPolygonPosition.value.spaceY;
-    }
-    if (
-        s.start.x === s.controlPoint1.x &&
-        s.start.y === s.controlPoint1.y &&
-        s.end.x === s.controlPoint2.x &&
-        s.end.y === s.controlPoint2.y
-    ) {
-      s.controlPoint1 = s.start;
-      s.controlPoint2 = s.end;
-    } else if (
-        s.start.x === s.controlPoint1.x &&
-        s.start.y === s.controlPoint1.y
-    ) {
-      s.controlPoint1 = s.start;
-      s.controlPoint2.x += fixedPolygonPosition.value.spaceX;
-      s.controlPoint2.y += fixedPolygonPosition.value.spaceY;
-    } else if (s.end.x === s.controlPoint2.x && s.end.y === s.controlPoint2.y) {
-      s.controlPoint2 = s.end;
-      s.controlPoint1.x += fixedPolygonPosition.value.spaceX;
-      s.controlPoint1.y += fixedPolygonPosition.value.spaceY;
-    } else {
-      // Curves
-      s.controlPoint1.x += fixedPolygonPosition.value.spaceX;
-      s.controlPoint1.y += fixedPolygonPosition.value.spaceY;
-      s.controlPoint2.x += fixedPolygonPosition.value.spaceX;
-      s.controlPoint2.y += fixedPolygonPosition.value.spaceY;
-    }
-  });
-
-  fixedPolygonPosition.value.spaceX = 0;
-  fixedPolygonPosition.value.spaceY = 0;
-
-  polygon.value.nodes.forEach((node) => {
-    if (!node.lines || !node.lines[0]) return;
-    if (node.rect.x !== node.lines[0].x1) node.rect.x = node.lines[0].x1;
-    if (node.rect.y !== node.lines[0].y1) node.rect.y = node.lines[0].y1;
-  });
-  const polygonElement: HTMLElement = document.getElementById(
-      `polygon-${targetPolygonIndex.value}`,
-  );
-  const boundingBox: HTMLElement = document.getElementById('bounding-box')
-  if (!(polygonElement && boundingBox)) return;
-  polygonElement.style.transform = "translate(0px, 0px)";
-  boundingBox.style.transform = "translate(0px, 0px)";
-};
-const updateAutoPosition = () => {
-  if (!fixedPolygonPosition.value.spaceX && !fixedPolygonPosition.value.spaceY || !polygon.value) return;
-  isMoveAPolygon.value = false;
-  fixedPolygonPosition.value.x = 0;
-  fixedPolygonPosition.value.y = 0;
-  polygon.value.nodes.forEach((node) => {
-    node.rect.x += fixedPolygonPosition.value.spaceX;
-    node.rect.y += fixedPolygonPosition.value.spaceY;
-    if (node.lines.length && node.circles.length) {
-      for (let i = 0; i < node.lines.length; i++) {
-        node.lines[i].x1 = node.rect.x;
-        node.lines[i].y1 = node.rect.y;
-        node.lines[i].x2 += fixedPolygonPosition.value.spaceX;
-        node.lines[i].y2 += fixedPolygonPosition.value.spaceY;
-        node.circles[i].x = node.lines[i].x2;
-        node.circles[i].y = node.lines[i].y2;
-      }
-    }
-  });
-
-  polygon.value.segments.forEach((s, i) => {
-    if (i === polygon.value.segments?.length - 1) {
-      s.start.x += fixedPolygonPosition.value.spaceX;
-      s.start.y += fixedPolygonPosition.value.spaceY;
-
-      s.end.x += fixedPolygonPosition.value.spaceX;
-      s.end.y += fixedPolygonPosition.value.spaceY;
     } else {
       s.start.x += fixedPolygonPosition.value.spaceX;
       s.start.y += fixedPolygonPosition.value.spaceY;

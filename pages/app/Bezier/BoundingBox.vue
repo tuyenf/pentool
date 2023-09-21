@@ -205,6 +205,7 @@ const resizeBoundingBox = (e: any) => {
     x: Math.max(limits.minX, Math.min(e.clientX ? e.clientX - workspacePosition.left : e.offsetX, limits.maxX)),
     y: Math.max(limits.minY, Math.min(e.clientY ? e.clientY - workspacePosition.top : e.offsetY, limits.maxY)),
   };
+
   let spaceX = handlerIndex.value > 0
       ? (newPosition.x - boundingBox.value.handlers[handlerIndex.value - 1].x) / 2
       : 0;
@@ -213,6 +214,7 @@ const resizeBoundingBox = (e: any) => {
       : 0;
 
   const handlers = boundingBox.value.handlers
+
   switch (handlerIndex.value) {
     case 1:
       spaceX = 0;
@@ -299,10 +301,9 @@ const resizeBoundingBox = (e: any) => {
       handlers[handlerIndex.value + 2].y = handlers[handlerIndex.value + 2].y + spaceY;
       handlers[handlerIndex.value + 3].y = handlers[handlerIndex.value + 3].y + spaceY / 2;
   }
+
   calcSegmentBoudingBox();
-  const isAutoCreate = polygon.value?.isAutoCreate
-  if (!(isAutoCreate && props.onDrawSpeechBubble)) resizePolygon();
-  else autoResizePolygon();
+  resizePolygon();
 };
 const resizePolygon = () => {
   let points: CommonModule.MinMax[] = [];
@@ -330,8 +331,14 @@ const resizePolygon = () => {
   const miny = getMinMaxValue(boundingBox.value.handlers, true, "", "y");
   const maxy = getMinMaxValue(boundingBox.value.handlers, false, "", "y");
 
-  let xScale = maxX - minX !== 0 ? (maxx - minx) / (maxX - minX) : 1;
-  let yScale = maxY - minY !== 0 ? (maxy - miny) / (maxY - minY) : 1;
+
+  const numeratorX = (maxx - minx).toFixed(12)
+  const denominatorX = (maxX - minX).toFixed(12)
+  const numeratorY = (maxy - miny).toFixed(12)
+  const denominatorY = (maxY - minY).toFixed(12)
+
+  let xScale = maxX - minX !== 0 ? numeratorX / denominatorX : 1;
+  let yScale = maxY - minY !== 0 ? numeratorY / denominatorY : 1;
 
   if (xScale === 0 || yScale === 0) return;
 
@@ -402,6 +409,7 @@ const resizePolygon = () => {
     return node;
   });
 };
+
 const updateSegments = (node: CommonModule.Point, nodeIndex: number, fixedNodes: Node[]) => {
   const newPosition = {x: node.x, y: node.y,};
   const segments = polygon.value.segments
@@ -446,9 +454,27 @@ const updateSegments = (node: CommonModule.Point, nodeIndex: number, fixedNodes:
     segments[nodeIndex - 1].end.y = newPosition.y;
     segments[nodeIndex].start.x = newPosition.x;
     segments[nodeIndex].start.y = newPosition.y;
+
+    if (numberController > 1) {
+      segments[nodeIndex - 1].controlPoint2 = nodes[nodeIndex].circles[1]
+      segments[nodeIndex].controlPoint1 = nodes[nodeIndex].circles[0]
+    } else if (numberController) {
+      segments[nodeIndex].controlPoint1 = nodes[nodeIndex].circles[0]
+    }
   } else {
     segments[0].start = newPosition;
     segments[segments.length - 1].end = newPosition;
+
+    if (numberController > 1) {
+      segments[0].controlPoint1 = nodes[0]?.circles[0]
+      segments[0].controlPoint2 = nodes[1]?.circles[1]
+
+      segments[segments.length - 1].controlPoint1 = nodes[nodes.length - 1].circles[0]
+      segments[segments.length - 1].controlPoint2 = nodes[0].circles[1]
+    } else if (numberController) {
+      segments[0].controlPoint1 = nodes[0]?.circles[0]
+      segments[segments.length - 1].controlPoint1 = nodes[nodes.length - 1].circles[0]
+    }
   }
 };
 
@@ -481,7 +507,8 @@ const drawSpeechBubble = () => {
   fixedPolygonPosition.value.y = boundingBox.value.handlers[3].y;
   fixedPolygonPosition.value.spaceX = newCenterPoint.x - fixedPolygonPosition.value.x;
   fixedPolygonPosition.value.spaceY = newCenterPoint.y - fixedPolygonPosition.value.y;
-  updateAutoPosition()
+
+  updateNewPosition()
   createBoundingBox();
   calcSegmentBoudingBox();
 
@@ -500,10 +527,9 @@ const drawSpeechBubble = () => {
   resizeBoundingBox(newPoint2);
   targetPolygonIndex.value = -1
 }
-
 /* Speech Draw
 * */
-const updateAutoPosition = () => {
+const updateNewPosition = () => {
   if (!fixedPolygonPosition.value.spaceX && !fixedPolygonPosition.value.spaceY || !polygon.value) return;
   isMoveAPolygon.value = false;
   fixedPolygonPosition.value.x = 0;
@@ -579,172 +605,6 @@ const updateAutoPosition = () => {
   if (!polygonElement || !boundingElement.value) return;
   polygonElement.style.transform = "translate(0px, 0px)";
   boundingElement.value.style.transform = "translate(0px, 0px)";
-};
-const autoUpdateSegments = (node: CommonModule.Point, nodeIndex: number, fixedNodes: Node[]) => {
-  const targetEl = polygons.value[polygons.value.length - 1]
-  const newPosition = {x: node.x, y: node.y,};
-  const segments = targetEl.segments
-  const nodes = targetEl.nodes
-  const numberController = nodes[nodeIndex].lines.length
-
-  if (numberController) {
-    const isLeftToRight = newPosition.x > nodes[nodeIndex].rect.x;
-    const isTopToBottom = newPosition.y > nodes[nodeIndex].rect.y;
-    const space = {
-      x: Math.abs(fixedNodes[nodeIndex].rect.x - newPosition.x),
-      y: Math.abs(fixedNodes[nodeIndex].rect.y - newPosition.y),
-    };
-
-    for (let i = 0; i < numberController; i++) {
-      nodes[nodeIndex].lines[i].x1 = newPosition.x;
-      nodes[nodeIndex].lines[i].y1 = newPosition.y;
-    }
-
-    for (let i = 0; i < numberController; i++) {
-      if (isLeftToRight) nodes[nodeIndex].circles[i].x += space.x;
-      else nodes[nodeIndex].circles[i].x -= space.x;
-      if (isTopToBottom) nodes[nodeIndex].circles[i].y += space.y;
-      else nodes[nodeIndex].circles[i].y -= space.y;
-    }
-
-    for (let i = 0; i < numberController; i++) {
-      nodes[nodeIndex].lines[i].x2 = nodes[nodeIndex].circles[i].x;
-      nodes[nodeIndex].lines[i].y2 = nodes[nodeIndex].circles[i].y;
-    }
-  } else if (nodeIndex > 0) {
-    segments[nodeIndex - 1].controlPoint2 = newPosition;
-    segments[nodeIndex].controlPoint1 = newPosition;
-  } else {
-    segments[0].controlPoint1 = newPosition;
-    segments[segments?.length - 1].controlPoint2 = newPosition;
-  }
-
-  // Update segments
-  if (nodeIndex > 0) {
-    segments[nodeIndex - 1].end.x = newPosition.x;
-    segments[nodeIndex - 1].end.y = newPosition.y;
-    segments[nodeIndex].start.x = newPosition.x;
-    segments[nodeIndex].start.y = newPosition.y;
-
-    if (numberController > 1) {
-      segments[nodeIndex - 1].controlPoint2 = nodes[nodeIndex].circles[1]
-      segments[nodeIndex].controlPoint1 = nodes[nodeIndex].circles[0]
-    } else if (numberController) {
-      segments[nodeIndex].controlPoint1 = nodes[nodeIndex].circles[0]
-    }
-  } else {
-    segments[0].start = newPosition;
-    segments[segments.length - 1].end = newPosition;
-
-    if (numberController > 1) {
-      segments[0].controlPoint1 = nodes[0]?.circles[0]
-      segments[0].controlPoint2 = nodes[1]?.circles[1]
-
-      segments[segments.length - 1].controlPoint1 = nodes[nodes.length - 1].circles[0]
-      segments[segments.length - 1].controlPoint2 = nodes[0].circles[1]
-    } else if (numberController) {
-      segments[0].controlPoint1 = nodes[0]?.circles[0]
-      segments[segments.length - 1].controlPoint1 = nodes[nodes.length - 1].circles[0]
-    }
-  }
-};
-const autoResizePolygon = () => {
-  let points: CommonModule.MinMax[] = [];
-  const targetEl = polygons.value[polygons.value.length - 1]
-  targetEl.segments.forEach((segment) => {
-    points.push(
-        bezierMinMax(
-            segment.start.x,
-            segment.start.y,
-            segment.controlPoint1.x,
-            segment.controlPoint1.y,
-            segment.controlPoint2.x,
-            segment.controlPoint2.y,
-            segment.end.x,
-            segment.end.y,
-        ),
-    );
-  });
-  const minX = getMinMaxValue(points, true, "min", "x");
-  const maxX = getMinMaxValue(points, false, "max", "x");
-  const minY = getMinMaxValue(points, true, "min", "y");
-  const maxY = getMinMaxValue(points, false, "max", "y");
-
-  const minx = getMinMaxValue(boundingBox.value.handlers, true, "", "x");
-  const maxx = getMinMaxValue(boundingBox.value.handlers, false, "", "x");
-  const miny = getMinMaxValue(boundingBox.value.handlers, true, "", "y");
-  const maxy = getMinMaxValue(boundingBox.value.handlers, false, "", "y");
-
-  let xScale = maxX - minX !== 0 ? (maxx - minx) / (maxX - minX) : 1;
-  let yScale = maxY - minY !== 0 ? (maxy - miny) / (maxY - minY) : 1;
-
-  if (xScale === 0 || yScale === 0) return;
-
-  // Calculate the center of the original bounding box
-  const originalCenterX = (maxX + minX) / 2;
-  const originalCenterY = (maxY + minY) / 2;
-
-  // Calculate the center of the new bounding box
-  const newCenterX = (maxx + minx) / 2;
-  const newCenterY = (maxy + miny) / 2;
-
-  // Translate the polygon to the center of the original bounding box
-  const translatedNodes = targetEl.nodes.map(
-      (node) => {
-        node.rect.x -= originalCenterX;
-        node.rect.y -= originalCenterY;
-        if (!node.circles) return node;
-        for (let i = 0; i < node.circles.length; i++) {
-          node.circles[i].x -= originalCenterX;
-          node.circles[i].y -= originalCenterY;
-
-          node.lines[i].x1 -= originalCenterX;
-          node.lines[i].y1 -= originalCenterY;
-          node.lines[i].x2 -= originalCenterX;
-          node.lines[i].y2 -= originalCenterY;
-        }
-        return node;
-      },
-  );
-
-  // Scale the polygon vertices
-  const scaledNodes = translatedNodes.map((node) => {
-    node.rect.x *= xScale;
-    node.rect.y *= yScale;
-    if (!node.circles) return node;
-    for (let i = 0; i < node.circles.length; i++) {
-      node.circles[i].x *= xScale;
-      node.circles[i].y *= yScale;
-
-      node.lines[i].x1 *= xScale;
-      node.lines[i].y1 *= yScale;
-      node.lines[i].x2 *= xScale;
-      node.lines[i].y2 *= yScale;
-    }
-    return node;
-  });
-
-  // Translate the polygon back to its original position
-  const fixedNodes = [].concat(targetEl.nodes);
-  scaledNodes.forEach((node, i) => {
-    node.rect.x += newCenterX;
-    node.rect.y += newCenterY;
-
-    if (!node.circles) {
-      autoUpdateSegments(node.rect, i, fixedNodes);
-      return node;
-    }
-    for (let i = 0; i < node.circles.length; i++) {
-      node.circles[i].x += newCenterX;
-      node.circles[i].y += newCenterY;
-
-      node.lines[i].x1 += newCenterX;
-      node.lines[i].y1 += newCenterY;
-      node.lines[i].x2 += newCenterX;
-      node.lines[i].y2 += newCenterY;
-    }
-    autoUpdateSegments(node.rect, i, fixedNodes);
-  });
 };
 const resetBoundingBox = () => {
   boundingBox.value.handlers.length = 0
