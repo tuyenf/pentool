@@ -36,7 +36,6 @@ declare namespace CommonModule {
     pathAbsolute?: Segment;
     coordinates?: string;
     isFilled?: boolean;
-    isAutoCreate?: boolean
   }
 
   interface BoundingBox {

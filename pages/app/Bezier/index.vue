@@ -236,6 +236,8 @@ const stageStarted = (e: MouseEvent, isEnd?: boolean) => {
     });
     nodes[0].isZigzag = true
     isDrawing.value = false
+    nodes[0].lines.pop()
+    nodes[0].circles.pop()
   } else if (!isStageEnded.value[targetPolygonIndex.value]) {
     targetPoint.value += 1;
     const node: CommonModule.Node = {
