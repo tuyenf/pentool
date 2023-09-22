@@ -141,6 +141,8 @@ interface IProps {
   targetPolygonIndex: number,
   isDrawingSpeechBubble?: boolean
   isResetBoundingBox?: boolean
+  isStageMove?: boolean
+  targetPoint?: number
 }
 interface IEmits {
   (e: 'update:polygons', value: CommonModule.Polygon[]): void
@@ -148,11 +150,15 @@ interface IEmits {
   (e: 'update:targetPolygonIndex', value: number | null): void
   (e: 'update:isDrawingSpeechBubble', value: boolean): void
   (e: 'update:isResetBoundingBox', value: boolean): void
+  (e: 'update:isStageMove', value: boolean): void
+  (e: 'update:targetPoint', value: number): void
 }
 const emits = defineEmits<IEmits>()
 const props = defineProps<IProps>()
 const targetPolygonIndex = useVModel(props, 'targetPolygonIndex', emits)
 const isResetBoundingBox = useVModel(props, 'isResetBoundingBox', emits)
+const isStageMove = useVModel(props, 'isStageMove', emits)
+const targetPoint = useVModel(props, 'targetPoint', emits)
 const polygon = useVModel(props, 'polygon', emits)
 const polygons = useVModel(props, 'polygons', emits)
 const boundingBox = ref<CommonModule.BoundingBox>({
@@ -203,6 +209,7 @@ const handleMouseUp = () => {
   isMoveAController.value = false;
   editOneController.value = false;
   isMoveAPolygon.value = false
+  isStageMove.value = false
 
   updateNewPosition();
   if (!props.isStageEnded[targetPolygonIndex.value] || polygon.value.nodes[0].isZigzag) return
@@ -236,6 +243,7 @@ watch(isAlt, (val) => {
 const handleMoveControler = (event: MouseEvent, polygonId: number, nodeId: number, circleId: number) => {
   if (!props.onDirectSelectionTool || targetPolygonIndex.value == null) return;
   nodeIndex.value = nodeId;
+  targetPoint.value = nodeId
   targetPolygonIndex.value = polygonId;
   circleIndex.value = circleId;
   mouseDownEvent.value = setTimeout(() => {
@@ -383,6 +391,7 @@ const updateNewPosition = () => {
   boundingBox.style.transform = "translate(0px, 0px)";
 };
 const moveAController = (e: MouseEvent) => {
+  isStageMove.value = true
   const newPosition = {
     x: e.offsetX,
     y: e.offsetY,

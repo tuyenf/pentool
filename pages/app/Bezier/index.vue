@@ -29,6 +29,8 @@
                         :polygons="polygons"
                         v-model:targetPolygonIndex="targetPolygonIndex"
                         v-model:polygon="polygons[targetPolygonIndex]"
+                        v-model:isStageMove="isStageMove"
+                        v-model:targetPoint="targetPoint"
                         :isDrawingSpeechBubble="isDrawingSpeechBubble"
                         :isStageEnded="isStageEnded"
                         v-model:isResetBoundingBox="isResetBoundingBox"
