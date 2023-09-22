@@ -337,8 +337,8 @@ const resizePolygon = () => {
   const numeratorY = (maxy - miny).toFixed(12)
   const denominatorY = (maxY - minY).toFixed(12)
 
-  let xScale = maxX - minX !== 0 ? numeratorX / denominatorX : 1;
-  let yScale = maxY - minY !== 0 ? numeratorY / denominatorY : 1;
+  let xScale = numeratorX / denominatorX
+  let yScale = numeratorY / denominatorY
 
   if (xScale === 0 || yScale === 0) return;
 
