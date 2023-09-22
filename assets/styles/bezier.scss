@@ -1,0 +1,206 @@
+:root {
+  --z13: #373d48;
+  --bg: #1a202c;
+  --panel-width: 30px;
+  --background: #1A202C;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+  background-color: var(--background);
+}
+img {
+  object-fit: contain;
+}
+.stageStarted {
+  cursor:
+    url("@/assets/images/pentool.png") 8 0,
+    crosshair;
+}
+.bezier {
+  &-container {
+    @include size(100vw, 100vh);
+    display: flex;
+  }
+  &-panel {
+    width: var(--panel-width);
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+    position: absolute;
+    top: 40px;
+    left: 70px;
+  }
+  &-tool {
+    @include size(30px);
+    @include flex(center, center);
+    cursor: pointer;
+    position: relative;
+    border-bottom: 1px solid #1A202C;
+    transition: all 0.25s ease;
+    background-color: #555A63;
+
+    &.isActive {
+      background-color: #ffffff;
+    }
+    &:hover {
+      background-color: #ffffff;
+      .bezier-tool__name {
+        display: block;
+      }
+    }
+    img {
+      @include size(15px);
+    }
+    &__name {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: calc(100% + 5px);
+      font-size: 10px;
+      white-space: nowrap;
+      background-color: #eeeeee;
+      padding: 2px;
+      z-index: 99;
+    }
+  }
+}
+.workspace {
+  flex: 1;
+  position: relative;
+}
+.drawing {
+  @include size(100%);
+}
+#workspace-virtual,
+#workspace {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100vw - 200px);
+  height: calc(100vh - 80px);
+  border: 1px solid salmon;
+}
+
+#endpoint,
+#startpoint,
+.endpoint,
+.startpoint {
+  stroke: none;
+  fill: none;
+}
+
+.hide {
+  display: none;
+}
+#bounding-box {
+  pointer-events: none;
+}
+.polygon {
+  pointer-events: bounding-box;
+  &.isMoving {
+    cursor: grab;
+  }
+}
+path {
+  fill: none;
+}
+.polygon.isFilled path {
+  fill: #ff6d91;
+}
+rect.isEditing:hover,
+circle.isEditing:hover {
+  fill: #4e7fff !important;
+}
+rect {
+  &.isEditing {
+    &:hover {
+      cursor:
+        url("@/assets/images/mouse.png") 4 0,
+        crosshair;
+    }
+  }
+  &.ns-resize {
+    &:hover {
+      cursor: ns-resize;
+    }
+  }
+  &.ew-resize {
+    &:hover {
+      cursor: ew-resize;
+    }
+  }
+  &.nesw-resize {
+    &:hover {
+      cursor: nesw-resize;
+    }
+  }
+  &.nwse-resize {
+    &:hover {
+      cursor: nwse-resize;
+    }
+  }
+}
+.circle {
+  width: 5px;
+  height: 5px;
+  border: 1px solid #4e7fff;
+  background-color: #ffffff;
+  position: absolute;
+  border-radius: 0;
+  z-index: 999;
+  cursor: pointer;
+  &-top {
+    left: 50%;
+    transform: translateX(-50%);
+    top: -3px;
+  }
+  &-right {
+    right: -3px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  &-bottom {
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  &-left {
+    left: -3px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  &-top-left {
+    top: -3px;
+    left: -3px;
+  }
+  &-top-right {
+    top: -3px;
+    right: -3px;
+  }
+  &-bottom-left {
+    bottom: -3px;
+    left: -3px;
+  }
+  &-bottom-right {
+    bottom: -3px;
+    right: -3px;
+  }
+}
+
+#virtualRectangle {
+  position: absolute;
+  border: 2px dashed palevioletred;
+  opacity: 0;
+  z-index: -1;
+}
+.node_group {
+  pointer-events: none;
+}
+rect,
+circle {
+  pointer-events: auto;
+}
