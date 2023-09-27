@@ -8,6 +8,7 @@
           v-model:onSelectionTool="onSelectionTool"
           v-model:onDrawSpeechBubble="onDrawSpeechBubble"
           v-model:isSelectedBubbleType="isSelectedBubbleType"
+          :polygon="polygons[targetPolygonIndex]"
           @update:targetPolygonIndex="(newVal) => targetPolygonIndex = newVal"
           :isDrawing="isDrawing"
       />
@@ -52,6 +53,8 @@ import {BUBBLE_TEMPLATES, KEY_BOARD} from "~/lib/utils/contants";
 import BezierPanel from "~/pages/app/Bezier/Panel.vue";
 import BezierPolygon from "~/pages/app/Bezier/Polygon.vue";
 import {useKeyModifier} from "@vueuse/core";
+import {CommonModule, SelectedBubbleType} from "~/lib/types/common";
+import {StorageService} from "~/lib/utils/StorageService";
 
 const route = useRoute();
 
@@ -78,7 +81,7 @@ const onDrawSpeechBubble = ref<boolean>(false);
 const imgContainerElement: Ref<HTMLElement | undefined> = ref()
 const virtualRectangleElement: Ref<HTMLElement | undefined> = ref()
 const movementLimit = ref<CommonModule.MovementLimit>()
-const isSelectedBubbleType = ref<String>()
+const isSelectedBubbleType = ref<CommonModule.SelectedBubbleType>()
 const virtualRectangle = ref<CommonModule.VirtualRectangle>({
   top: 0,
   left: 0,
@@ -167,8 +170,9 @@ const mouseUp = (event: MouseEvent) => {
 
   isDrawingSpeechBubble.value = true
   targetPolygonIndex.value = polygons.value.length;
-  const bubbleTemplates = JSON.parse(JSON.stringify(BUBBLE_TEMPLATES))
-  if (isSelectedBubbleType.value) polygons.value.push(bubbleTemplates[isSelectedBubbleType.value.toString()])
+  let bubbleTemplates = JSON.parse(JSON.stringify(BUBBLE_TEMPLATES))
+  if (isSelectedBubbleType.value && isSelectedBubbleType.value.isManual) bubbleTemplates = [].concat(StorageService.get('bubbleTemplates'))
+  if (isSelectedBubbleType.value) polygons.value.push(bubbleTemplates[isSelectedBubbleType.value.type])
   if (virtualRectangleElement.value) virtualRectangleElement.value.style.opacity = '0'
   isStageEnded.value[targetPolygonIndex.value] = true
   createNewPolygon.value = true

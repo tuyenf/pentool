@@ -41,13 +41,39 @@ img {
     border-bottom: 1px solid #1A202C;
     transition: all 0.25s ease;
     background-color: #555A63;
-
+    &::after {
+      position: absolute;
+      content: '';
+      width: 5px;
+      left: 100%;
+      top: 0;
+      height: 100%;
+      z-index: 999;
+    }
+    &__delete {
+      display: none;
+      position: absolute;
+      bottom: -5px;
+      left: calc(100% + 5px);
+      font-size: 10px;
+      white-space: nowrap;
+      background-color: #eeeeee;
+      padding: 2px;
+      z-index: 99;
+    }
+    &__avt {
+      font-size: 13px;
+      font-weight: 600;
+    }
     &.isActive {
       background-color: #ffffff;
     }
     &:hover {
       background-color: #ffffff;
       .bezier-tool__name {
+        display: block;
+      }
+      .bezier-tool__delete {
         display: block;
       }
     }
@@ -57,13 +83,15 @@ img {
     &__name {
       display: none;
       position: absolute;
-      top: 0;
-      left: calc(100% + 5px);
+      top: -5px;
+      left: calc(100% + 5px);;
       font-size: 10px;
       white-space: nowrap;
       background-color: #eeeeee;
       padding: 2px;
       z-index: 99;
+      user-select: none;
+      cursor: default;
     }
   }
 }

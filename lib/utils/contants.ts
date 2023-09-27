@@ -4,8 +4,8 @@ export const enum KEY_BOARD {
   ALT = "Alt",
 }
 export const BUBBLE_TYPES = ["Bubble 1", "Bubble 2", "Bubble 3", "Bubble 4"];
-export const BUBBLE_TEMPLATES = {
-  "Bubble 1": {
+export const BUBBLE_TEMPLATES = [
+  {
     nodes: [
       {
         rect: {
@@ -122,8 +122,9 @@ export const BUBBLE_TEMPLATES = {
         },
       },
     ],
+    name: "Bubble 1"
   },
-  "Bubble 2": {
+  {
     nodes: [
       {
         "rect": {
@@ -328,8 +329,9 @@ export const BUBBLE_TEMPLATES = {
         }
       }
     ],
+    name: "Bubble 2"
   },
-  "Bubble 3": {
+  {
     nodes: [
       {
         "rect": {
@@ -684,8 +686,9 @@ export const BUBBLE_TEMPLATES = {
         }
       }
     ],
+    name: "Bubble 3"
   },
-  "Bubble 4": {
+  {
     nodes: [
       {
         "rect": {
@@ -1018,5 +1021,6 @@ export const BUBBLE_TEMPLATES = {
         }
       }
     ],
+    name: "Bubble 3"
   }
-}
+]

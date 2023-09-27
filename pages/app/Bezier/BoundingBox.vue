@@ -40,6 +40,7 @@
 </template>
 <script lang="ts" setup>
 import {getMinMaxValue, bezierMinMax} from "~/lib/utils/global";
+import {StorageService} from "~/lib/utils/StorageService";
 interface IProps {
   targetPolygonIndex?: number | null,
   polygons?: CommonModule.Polygon[],

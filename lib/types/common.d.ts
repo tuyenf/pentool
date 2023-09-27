@@ -1,3 +1,5 @@
+import {b} from "vite-node/types-516036fa";
+
 declare namespace CommonModule {
   interface Point {
     x: number;
@@ -60,6 +62,8 @@ declare namespace CommonModule {
   }
 
   interface BubbleType {
+    nodes: Node[],
+    segments: Segment[],
     name: string;
   }
 
@@ -80,5 +84,9 @@ declare namespace CommonModule {
     maxX: number,
     minY: number
     maxY: number
+  }
+  interface SelectedBubbleType {
+    type: number,
+    isManual: boolean
   }
 }
