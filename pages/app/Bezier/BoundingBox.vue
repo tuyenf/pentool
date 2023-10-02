@@ -2,6 +2,7 @@
   <g
       id="bounding-box"
       ref="boundingElement"
+      :style="{opacity: isHideEditor ? 0 : 1}"
       v-if="
             boundingBox.handlers.length &&
             boundingBox.segments.length &&
@@ -33,7 +34,6 @@
                         C ${segment.start.x} ${segment.start.y} ${segment.end.x}
                         ${segment.end.y} ${segment.end.x} ${segment.end.y}`"
         :id="`bounding-segment-${index}`"
-        style="opacity: 1"
         stroke="#4E7FFF"
     ></path>
   </g>
@@ -52,6 +52,7 @@ interface IProps {
   isReCalcBoundingBox: boolean,
   isDrawingSpeechBubble: boolean,
   isResetBoundingBox: boolean,
+  isHideEditor: boolean,
 }
 interface IEmits {
   (e: 'update:targetPolygonIndex', value: number | null): void
@@ -68,9 +69,9 @@ const isResetBoundingBox = useVModel(props, 'isResetBoundingBox', emits)
 const polygons = useVModel(props, 'polygons', emits)
 const polygon = useVModel(props, 'polygon', emits)
 
-const r = 4;
-const a = 8;
-const b = 8;
+const r = 3;
+const a = 6;
+const b = 6;
 
 const handlerIndex = ref<number | null>();
 

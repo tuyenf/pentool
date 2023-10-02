@@ -1,7 +1,7 @@
 :root {
   --z13: #373d48;
   --bg: #1a202c;
-  --panel-width: 30px;
+  --panel-width: 60px;
   --background: #1A202C;
 }
 body {
@@ -28,19 +28,140 @@ img {
     flex-wrap: wrap;
     align-content: flex-start;
     justify-content: flex-start;
-    flex-direction: column;
+    flex-wrap: wrap;
     position: absolute;
     top: 40px;
-    left: 70px;
+    left: 40px;
   }
   &-tool {
-    @include size(30px);
+    height: 30px;
+    width: 50%;
     @include flex(center, center);
     cursor: pointer;
     position: relative;
     border-bottom: 1px solid #1A202C;
     transition: all 0.25s ease;
     background-color: #555A63;
+    &:hover {
+      background-color: #ffffff;
+      .bezier-tool__name {
+        display: block;
+      }
+      .bezier-tool__delete {
+        display: block;
+      }
+    }
+    &:nth-child(odd) {
+      border-right: 1px solid #1A202C;
+    }
+    &-color {
+      width: 100%;
+      height: 72px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      &:hover {
+        .bezier-tool__name {
+          display: none;
+        }
+      }
+      &-reset {
+        width: 100%;
+        @include flex(center, center);
+        border-top: 1px solid gray;
+        &-icon {
+          @include size(12px);
+          background-color: #ffffff;
+          &.isStroke {
+            border: 1px solid #1A202C;
+            &::after {
+              position: absolute;
+              content: '';
+              @include size(30%);
+              background-color: #555A63;
+              @include centerAbsolute('both');
+            }
+          }
+        }
+        &-item {
+          padding: 2px 4px;
+          width: 33.3333%;
+          position: relative;
+          &.isActive {
+            background-color: #303030;
+          }
+          &:hover {
+            .bezier-tool__name {
+              display: block;
+            }
+          }
+          & + .bezier-tool-color-reset-item {
+            border-left: 1px solid gray;
+          }
+        }
+        &__gradient {
+          background-image: linear-gradient(to right, #ffffff, #000000);
+        }
+        &__none {
+          &::after {
+            position: absolute;
+            content: '';
+            border-bottom: 1px solid red;
+            width: 17px;
+            top: 50%;
+            left: calc(50% + 1px);
+            transform: translate(-50%, -50%) rotate(-45deg);
+          }
+        }
+      }
+      &-arrow {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+      }
+      &:hover {
+        background-color: #555A63 !important;
+      }
+      &-item {
+        @include size(35px);
+        position: absolute;
+        border: 1px solid #1A202C;
+        &.isNotActive:after {
+          position: absolute;
+          content: '';
+          border-bottom: 1px solid red;
+          width: 46px;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-45deg);
+        }
+      }
+    }
+    &__fill {
+      top: 4px;
+      left: 4px;
+      &:hover {
+        .bezier-tool__name {
+          display: block;
+        }
+      }
+    }
+    &__stroke {
+      bottom: 20px;
+      right: 4px;
+      padding: 5px;
+      &:hover {
+        .bezier-tool__name {
+          display: block;
+        }
+      }
+      &::before {
+        @include centerAbsolute('both');
+        content: '';
+        @include size(50%);
+        background-color: #555A63;
+      }
+    }
     &::after {
       position: absolute;
       content: '';
@@ -68,28 +189,30 @@ img {
     &.isActive {
       background-color: #ffffff;
     }
-    &:hover {
-      background-color: #ffffff;
-      .bezier-tool__name {
-        display: block;
-      }
-      .bezier-tool__delete {
-        display: block;
-      }
-    }
     img {
       @include size(15px);
+      &.bezier-tool-color-arrow {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        @include size(12px);
+      }
+    }
+    &-custom {
+      .bezier-tool__name {
+        top: -5px;
+      }
     }
     &__name {
       display: none;
       position: absolute;
-      top: -5px;
+      top: 0;
       left: calc(100% + 5px);;
       font-size: 10px;
       white-space: nowrap;
       background-color: #eeeeee;
       padding: 2px;
-      z-index: 99;
+      z-index: 9999;
       user-select: none;
       cursor: default;
     }
@@ -132,9 +255,11 @@ img {
   &.isMoving {
     cursor: grab;
   }
-}
-path {
-  fill: none;
+  &:hover {
+    .pathVirtual {
+      stroke: #4e7fff !important
+    }
+  }
 }
 .polygon.isFilled path {
   fill: #ff6d91;
@@ -173,8 +298,8 @@ rect {
   }
 }
 .circle {
-  width: 5px;
-  height: 5px;
+  width: 3px;
+  height: 3px;
   border: 1px solid #4e7fff;
   background-color: #ffffff;
   position: absolute;
@@ -231,4 +356,12 @@ rect {
 rect,
 circle {
   pointer-events: auto;
+}
+.vacp-color-picker {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 99999;
+  cursor: pointer;
 }

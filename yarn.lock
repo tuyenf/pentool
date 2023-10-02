@@ -7936,6 +7936,11 @@ vscode-uri@^3.0.2:
   resolved "https://registry.npmjs.org/vscode-uri/-/vscode-uri-3.0.7.tgz"
   integrity sha512-eOpPHogvorZRobNqJGhapa0JdwaxpjVvyBp0QIUMRMSf8ZAlqOdEquKuRmw9Qwu0qXtJIWqFtMkmvJjUZmMjVA==
 
+vue-accessible-color-picker@^4.1.4:
+  version "4.1.4"
+  resolved "https://registry.yarnpkg.com/vue-accessible-color-picker/-/vue-accessible-color-picker-4.1.4.tgz#5510e1525d08ef4e729360b534f36778f3bcb338"
+  integrity sha512-uq5wPWiR+VeuaZGxWRKuZSKpf2WH1EHa0Oas+rsEdgw35zZ/zotpw5LvyMiqbAagpiHxCp0AzqwDkMJ7dSbGQA==
+
 vue-bundle-renderer@^1.0.3:
   version "1.0.3"
   resolved "https://registry.npmjs.org/vue-bundle-renderer/-/vue-bundle-renderer-1.0.3.tgz"

@@ -33,11 +33,14 @@ declare namespace CommonModule {
     end: Point;
   }
   interface Polygon {
+    path: string;
     segments: Segment[];
     nodes: Node[];
     pathAbsolute?: Segment;
     coordinates?: string;
     isFilled?: boolean;
+    backgroundColor: string,
+    strokeColor: string
   }
 
   interface BoundingBox {
@@ -88,5 +91,18 @@ declare namespace CommonModule {
   interface SelectedBubbleType {
     type: number,
     isManual: boolean
+  }
+  interface ColorPickerResponse {
+    hex: string
+    hsv: {
+      a: number
+      h: number
+      s: number
+      v: number
+    }
+  }
+  interface RecentColor {
+    color: string,
+    isBackground: boolean
   }
 }

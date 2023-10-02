@@ -32,7 +32,8 @@
     "@nuxtjs/tailwindcss": "^6.8.0",
     "@webtoon/psd": "^0.4.0",
     "moment": "^2.29.4",
-    "sass": "^1.64.2"
+    "sass": "^1.64.2",
+    "vue-accessible-color-picker": "^4.1.4"
   },
   "description": "Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.",
   "version": "1.0.0",

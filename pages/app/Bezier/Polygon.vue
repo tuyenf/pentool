@@ -11,7 +11,7 @@
      @click="activePolygon(i)"
   >
     <defs>
-      <linearGradient  v-for="(segment, index) in polygon.segments"
+<!--      <linearGradient  v-for="(segment, index) in polygon.segments"
                        :key="index"
           :id="`decoration-${index}`"
           :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
@@ -20,7 +20,7 @@
         <stop offset="0" stop-color="#FF4D81"></stop>
         <stop offset="0.5" stop-color="#FA8172"></stop>
         <stop offset="1" stop-color="#FF4D81"></stop>
-      </linearGradient>
+      </linearGradient>-->
       <linearGradient v-if="polygon.pathAbsolute && !isStageEnded[i]"
                       id="decorationAbsolute"
                       :x1="polygon.pathAbsolute?.start?.x"
@@ -40,10 +40,11 @@
           :id="`pathAbsolute-${i}`"
           v-if="polygon.pathAbsolute && !isStageEnded[i]"
           style="opacity: 1"
+          fill="none"
           stroke="url(#decorationAbsolute)"
     ></path>
     <g :id="`segments-${i}`">
-      <path
+      <path class="pathVirtual"
           v-for="(segment, index) in polygon.segments"
           :key="index"
           :d="`M ${segment.start.x} ${segment.start.y}
@@ -51,8 +52,10 @@
                         ${segment.controlPoint2.y} ${segment.end.x} ${segment.end.y}`"
           :id="`segment-${i}-${index}`"
           style="opacity: 1"
-          :stroke="`url(#decoration-${index})`"
+          fill="none"
+          :stroke="[targetPolygonIndex === i ? '#4e7fff' : 'none']"
       ></path>
+      <path v-if="polygon.path" :d="polygon.path" :fill="polygon.backgroundColor" :stroke="polygon.strokeColor" style="opacity: 1"></path>
     </g>
     <g :id="`anchorPoints-${i}`">
       <g
@@ -69,7 +72,7 @@
             :y1="line.y1"
             :x2="line.x2"
             :y2="line.y2"
-            :class="{ hide: i !== targetPolygonIndex || !(onPenTool || onDirectSelectionTool) }"
+            :class="{ hide: i !== targetPolygonIndex || !(onPenTool || onDirectSelectionTool) || isHideEditor}"
             stroke="#4E7FFF"
             style="opacity: 1"
         ></line>
@@ -81,7 +84,7 @@
             :r="r"
             @mousedown.self="handleMoveControler($event, i, index, ci)"
             :class="{
-                  hide: i !== targetPolygonIndex || !(onPenTool || onDirectSelectionTool),
+                  hide: i !== targetPolygonIndex || !(onPenTool || onDirectSelectionTool) || isHideEditor,
                   isEditing: onDirectSelectionTool,
                 }"
             style="opacity: 1"
@@ -94,7 +97,7 @@
             :width="a"
             :height="b"
             :class="{
-                  hide: i !== targetPolygonIndex || !(onPenTool || onDirectSelectionTool),
+                  hide: i !== targetPolygonIndex || !(onPenTool || onDirectSelectionTool) || isHideEditor,
                   isEditing: onDirectSelectionTool,
                 }"
             fill="#4E7FFF"
@@ -120,13 +123,14 @@
                        :isResetBoundingBox="isResetBoundingBox"
                        @update:isResetBoundingBox="(newVal) => isResetBoundingBox = newVal"
                        :isReCalcBoundingBox="isReCalcBoundingBox"
+                       :isHideEditor="isHideEditor"
                        @update:boundingBox="(newVal) => boundingBox = newVal"
   />
   <!--END BOUNDING BOX-->
 </template>
 <script lang="ts" setup>
 import BezierBoundingBox from "~/pages/app/Bezier/BoundingBox.vue"
-import {useKeyModifier} from "@vueuse/core";
+import {onClickOutside, useKeyModifier} from "@vueuse/core";
 import {KEY_BOARD} from "~/lib/utils/contants";
 import {getMinMaxValue} from "~/lib/utils/global";
 
@@ -147,7 +151,7 @@ interface IProps {
 interface IEmits {
   (e: 'update:polygons', value: CommonModule.Polygon[]): void
   (e: 'update:polygon', value: CommonModule.Polygon): void
-  (e: 'update:targetPolygonIndex', value: number | null): void
+  (e: 'update:targetPolygonIndex', value: number): void
   (e: 'update:isDrawingSpeechBubble', value: boolean): void
   (e: 'update:isResetBoundingBox', value: boolean): void
   (e: 'update:isStageMove', value: boolean): void
@@ -166,9 +170,9 @@ const boundingBox = ref<CommonModule.BoundingBox>({
   segments: [],
 });
 
-const r = 4;
-const a = 8;
-const b = 8;
+const r = 3;
+const a = 6;
+const b = 6;
 
 const nodeIndex = ref(0);
 const circleIndex = ref(0);
@@ -176,6 +180,7 @@ const circleIndex = ref(0);
 const isMoveAPolygon = ref<boolean>(false);
 const isMoveAnAnchorPoint = ref<boolean>(false);
 const isMoveAController = ref<boolean>(false);
+const isHideEditor = ref<boolean>(false)
 const editOneController = ref<boolean>(false);
 
 const isReCalcBoundingBox = ref<boolean>(false);
@@ -194,6 +199,17 @@ onMounted(() => {
   nextTick(() => {
     const svg = document.querySelector('svg')
     svg.addEventListener('mouseup', handleMouseUp)
+  })
+})
+onUpdated(() => {
+  const polygon = document.querySelectorAll('.polygon')
+  if (!polygon) return
+  [...polygon].forEach((p: CommonModule.Polygon) => {
+    onClickOutside(p, (event: any) => {
+      if (props.onDirectSelectionTool || props.onSelectionTool) {
+        isHideEditor.value = true
+      }
+    })
   })
 })
 const handleMouseUp = () => {
@@ -229,6 +245,7 @@ const handleMouseDownPolygon = () => {
 };
 const activePolygon = (i: number) => {
   if (!props.onSelectionTool && !props.onDirectSelectionTool) return;
+  isHideEditor.value = false
   if (i >= 0 && i < polygons.value.length && polygons.value.length > 1) {
     const selectedItem = polygons.value.splice(i, 1)[0];
     polygons.value.push(selectedItem);
@@ -504,4 +521,19 @@ const moveAPolygon = async (e: any) => {
 const pointToString = (nodes) => {
   return nodes.map((point) => `${point.rect.x},${point.rect.y}`).join(" ");
 };
+
+watch(polygon, (val) => {
+  if (val) {
+    let path: string = ''
+    val.segments.forEach((segment: CommonModule.Segment, i) => {
+      if (i > 0) {
+        path+=` L ${segment.start.x} ${segment.start.y} C ${segment.controlPoint1.x} ${segment.controlPoint1.y} ${segment.controlPoint2.x} ${segment.controlPoint2.y} ${segment.end.x} ${segment.end.y}`
+      } else {
+        path+=`M ${segment.start.x} ${segment.start.y} C ${segment.controlPoint1.x} ${segment.controlPoint1.y} ${segment.controlPoint2.x} ${segment.controlPoint2.y} ${segment.end.x} ${segment.end.y}`
+      }
+    })
+    if (!path) return
+    polygon.value.path = path
+  }
+}, {deep: true})
 </script>

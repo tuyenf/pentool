@@ -3,7 +3,11 @@ export const enum KEY_BOARD {
   DELETE = "Delete",
   ALT = "Alt",
 }
-export const BUBBLE_TYPES = ["Bubble 1", "Bubble 2", "Bubble 3", "Bubble 4"];
+export const COLOR_TYPES = {
+  DEFAULT: 'default',
+  COLORS: 'colors',
+  PICKER: 'picker',
+}
 export const BUBBLE_TEMPLATES = [
   {
     nodes: [

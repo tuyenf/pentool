@@ -7,6 +7,7 @@
           v-model:onDirectSelectionTool="onDirectSelectionTool"
           v-model:onSelectionTool="onSelectionTool"
           v-model:onDrawSpeechBubble="onDrawSpeechBubble"
+          v-model:onFillTool="onFillTool"
           v-model:isSelectedBubbleType="isSelectedBubbleType"
           :polygon="polygons[targetPolygonIndex]"
           @update:targetPolygonIndex="(newVal) => targetPolygonIndex = newVal"
@@ -53,7 +54,7 @@ import {BUBBLE_TEMPLATES, KEY_BOARD} from "~/lib/utils/contants";
 import BezierPanel from "~/pages/app/Bezier/Panel.vue";
 import BezierPolygon from "~/pages/app/Bezier/Polygon.vue";
 import {useKeyModifier} from "@vueuse/core";
-import {CommonModule, SelectedBubbleType} from "~/lib/types/common";
+import {CommonModule} from "~/lib/types/common";
 import {StorageService} from "~/lib/utils/StorageService";
 
 const route = useRoute();
@@ -62,7 +63,7 @@ const workspace = ref<HTMLElement>();
 const polygons = ref<CommonModule.Polygon[]>([]);
 
 const targetPoint = ref(0);
-const targetPolygonIndex = ref(0);
+const targetPolygonIndex = ref<number>(0);
 const handlerIndex = ref<number | null>();
 
 const isStageStarted = ref<boolean>(false);
@@ -77,6 +78,7 @@ const onDirectSelectionTool = ref<boolean>(false);
 const onSelectionTool = ref<boolean>(false);
 const onPenTool = ref<boolean>(false);
 const onDrawSpeechBubble = ref<boolean>(false);
+const onFillTool = ref<boolean>(false);
 
 const imgContainerElement: Ref<HTMLElement | undefined> = ref()
 const virtualRectangleElement: Ref<HTMLElement | undefined> = ref()
@@ -197,6 +199,7 @@ const handleMouseDown = (event: MouseEvent) => {
 /* Drawing
 * */
 const stageStarted = (e: MouseEvent, isEnd?: boolean) => {
+  if (onFillTool.value) return;
   isStageStarted.value = true;
   isDrawing.value = true
   const el = e.target as HTMLElement
@@ -226,6 +229,9 @@ const stageStarted = (e: MouseEvent, isEnd?: boolean) => {
     polygons.value.push({
       nodes: [firstNode],
       segments: [],
+      path: '',
+      backgroundColor: 'none',
+      strokeColor: 'none'
     });
     targetPoint.value = 0;
     createNewPolygon.value = false;
@@ -435,7 +441,7 @@ const undo = () => {
     polygons.value.pop();
     createNewPolygon.value = true
     isDrawing.value = false
-  }
+  }undo
 };
 const checkUndoWithKeyBoard = () => {
   const userAgent = window.navigator.userAgent;
@@ -458,7 +464,7 @@ const checkUndoWithKeyBoard = () => {
 };
 
 const deletePolygon = () => {
-  if (!polygons.value.length || !polygons.value[targetPolygonIndex.value]) return;
+  if (!polygons.value.length || !polygons.value[targetPolygonIndex.value] || onFillTool.value) return;
   polygons.value.splice(targetPolygonIndex.value, 1);
   isStageEnded.value.splice(targetPolygonIndex.value, 1);
   isStageStarted.value = true;
@@ -477,7 +483,7 @@ watch(isAlt, (val) => {
 watch(isStageStarted, (val) => {
   if (val) {
     document.addEventListener("dblclick", ($event) => {
-      if (!onPenTool.value || polygons.value[targetPolygonIndex.value].nodes.length <= 1) return
+      if (!onPenTool.value || polygons.value[targetPolygonIndex.value].nodes.length <= 1 || onFillTool.value) return
       isStageEnded.value[targetPolygonIndex.value] = true;
       stageStarted($event, true);
     });
@@ -499,6 +505,14 @@ watch(onPenTool, (val) => {
     document.removeEventListener("mousemove", stageMoved)
   }
 });
+watch(onFillTool, (val) => {
+  if (!imgContainerElement.value) return
+  if (val) {
+    imgContainerElement.value.classList.remove("stageStarted");
+  } else if (onPenTool.value) {
+    imgContainerElement.value.classList.add("stageStarted");
+  }
+})
 watch(
     () => route.query,
     () => {
