@@ -480,7 +480,7 @@ const updateSegments = (node: CommonModule.Point, nodeIndex: number, fixedNodes:
 };
 
 const drawSpeechBubble = () => {
-  if (targetPolygonIndex.value === -1) return;
+  if (targetPolygonIndex.value === -1 || !props.onDrawSpeechBubble) return;
   // Move polygon to new position
   const virtualRectangleElement: HTMLElement = document.getElementById('virtualRectangle')
   const workspace: HTMLElement = document.getElementById('workspace')
