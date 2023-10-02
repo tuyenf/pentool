@@ -126,7 +126,10 @@ export const BUBBLE_TEMPLATES = [
         },
       },
     ],
-    name: "Bubble 1"
+    name: "Bubble 1",
+    isFilled: false,
+    backgroundColor: 'none',
+    strokeColor: '#4e7fff'
   },
   {
     nodes: [
@@ -333,7 +336,10 @@ export const BUBBLE_TEMPLATES = [
         }
       }
     ],
-    name: "Bubble 2"
+    name: "Bubble 2",
+    isFilled: false,
+    backgroundColor: 'none',
+    strokeColor: '#4e7fff'
   },
   {
     nodes: [
@@ -690,7 +696,10 @@ export const BUBBLE_TEMPLATES = [
         }
       }
     ],
-    name: "Bubble 3"
+    name: "Bubble 3",
+    isFilled: false,
+    backgroundColor: 'none',
+    strokeColor: '#4e7fff'
   },
   {
     nodes: [
@@ -1025,6 +1034,9 @@ export const BUBBLE_TEMPLATES = [
         }
       }
     ],
-    name: "Bubble 3"
+    name: "Bubble 3",
+    isFilled: false,
+    backgroundColor: 'none',
+    strokeColor: '#4e7fff'
   }
 ]

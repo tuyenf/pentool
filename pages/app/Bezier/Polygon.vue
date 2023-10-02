@@ -72,7 +72,7 @@
             :y1="line.y1"
             :x2="line.x2"
             :y2="line.y2"
-            :class="{ hide: i !== targetPolygonIndex || !(onPenTool || onDirectSelectionTool) || isHideEditor}"
+            :class="{ hide: checkIsShowEditor(i, index, false, li)}"
             stroke="#4E7FFF"
             style="opacity: 1"
         ></line>
@@ -84,20 +84,20 @@
             :r="r"
             @mousedown.self="handleMoveControler($event, i, index, ci)"
             :class="{
-                  hide: i !== targetPolygonIndex || !(onPenTool || onDirectSelectionTool) || isHideEditor,
+                  hide: checkIsShowEditor(i, index, false, ci),
                   isEditing: onDirectSelectionTool,
                 }"
             style="opacity: 1"
             fill="#4E7FFF"
         ></circle>
-        <rect
+        <rect @click.self="isActiveNode = true"
             @mousedown.self="handleMouseDownNode($event, i, index)"
             :x="node.rect.x - r"
             :y="node.rect.y - r"
             :width="a"
             :height="b"
             :class="{
-                  hide: i !== targetPolygonIndex || !(onPenTool || onDirectSelectionTool) || isHideEditor,
+                  hide: checkIsShowEditor(i, index, true),
                   isEditing: onDirectSelectionTool,
                 }"
             fill="#4E7FFF"
@@ -184,6 +184,9 @@ const isHideEditor = ref<boolean>(false)
 const editOneController = ref<boolean>(false);
 
 const isReCalcBoundingBox = ref<boolean>(false);
+const isActiveNode = ref<boolean>(false);
+const activeRect = ref<number>(-1)
+const tempActiveRect = ref<number>(-1)
 const mouseDownEvent = ref(null);
 const mousePressEvent = ref(null);
 const isMousePress = ref<boolean>(false);
@@ -207,11 +210,35 @@ onUpdated(() => {
   [...polygon].forEach((p: CommonModule.Polygon) => {
     onClickOutside(p, (event: any) => {
       if (props.onDirectSelectionTool || props.onSelectionTool) {
+        isActiveNode.value = false
         isHideEditor.value = true
       }
     })
   })
 })
+const checkIsShowEditor = (id: number, i: number, isRect?: boolean = false, index?: number) => {
+  let targetRect = targetPoint.value
+  if (tempActiveRect.value >= 0) targetRect = tempActiveRect.value
+  else if (activeRect.value >= 0) targetRect = activeRect.value
+
+  const totalNodes = polygon.value && polygon.value.nodes.length || 0
+  if (!totalNodes) return true
+
+  if (props.onDirectSelectionTool && !isActiveNode.value) return !isRect
+  if (id !== targetPolygonIndex.value || !(props.onPenTool || props.onDirectSelectionTool) || isHideEditor.value) return true
+  if (isRect) return (isStageMove.value && targetRect === 0 && (i !== 1 && i !== 0 && i !== totalNodes - 1)) || (isStageMove.value && targetRect !== 0 && i !== targetRect && i !== targetRect - 1) || id !== targetPolygonIndex.value || !(props.onPenTool || props.onDirectSelectionTool) || isHideEditor.value
+
+  if (targetRect === 0 && totalNodes > 1) {
+    return (i !== 1 && i !== totalNodes - 1 && i !== 0) || (totalNodes > 2 && (i === 1 && index !== 1)) || (i === totalNodes - 1 && index !== 0)
+  } else if (targetRect === totalNodes - 1 && i === 0) {
+    return totalNodes <=2 && targetRect !== 0 ? index !== 0 : targetRect === 1 ? i !== 0 : targetRect > 0 ? index === 0 : targetRect !== i
+  } else if (i === targetRect - 1 || (isActiveNode.value && i === targetRect + 1)) {
+    return isActiveNode.value && (i === targetRect + 1) ? index === 0 : index === 1
+  } else if (i === targetRect) {
+    return false
+  }
+  return true
+}
 const handleMouseUp = () => {
   document.removeEventListener("mousemove", moveAnAnchorPoint);
   document.removeEventListener("mousemove", moveAPolygon);
@@ -226,6 +253,7 @@ const handleMouseUp = () => {
   editOneController.value = false;
   isMoveAPolygon.value = false
   isStageMove.value = false
+  tempActiveRect.value = -1
 
   updateNewPosition();
   if (!props.isStageEnded[targetPolygonIndex.value] || polygon.value.nodes[0].isZigzag) return
@@ -258,6 +286,7 @@ watch(isAlt, (val) => {
   else editOneController.value = false
 })
 const handleMoveControler = (event: MouseEvent, polygonId: number, nodeId: number, circleId: number) => {
+  tempActiveRect.value = nodeId
   if (!props.onDirectSelectionTool || targetPolygonIndex.value == null) return;
   nodeIndex.value = nodeId;
   targetPoint.value = nodeId
@@ -270,6 +299,7 @@ const handleMoveControler = (event: MouseEvent, polygonId: number, nodeId: numbe
   }, 100);
 };
 const handleMouseDownNode = (event: MouseEvent, polygonId: number, nodeId: number) => {
+  activeRect.value = nodeId
   if (!props.onDirectSelectionTool) return;
   nodeIndex.value = nodeId;
   targetPolygonIndex.value = polygonId;

@@ -239,6 +239,7 @@ const stageStarted = (e: MouseEvent, isEnd?: boolean) => {
     createNewPolygon.value = true;
     nodes.splice(-2)
     segments.splice(-2)
+    targetPoint.value = 0
     const fixedNodes = JSON.parse(JSON.stringify(nodes))
     segments.push({
       start: fixedNodes[fixedNodes.length - 1].rect,
