@@ -63,6 +63,8 @@ img {
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
+      border-right: 0 !important;
+      border-bottom-color: gray;
       &:hover {
         .bezier-tool__name {
           display: none;

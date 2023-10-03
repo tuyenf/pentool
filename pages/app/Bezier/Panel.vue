@@ -221,7 +221,7 @@ const onActiveEleChange = (type: string, index = 0) => {
   }
 }
 const updateColor = (value: string) => {
-  if (!value || value === '#000') return
+  if (!value || value === '#000' || isActive.value === 'none') return
   recentColor.value.color = value
   isActive.value = 'color'
   if (!isFill.value) {
@@ -253,10 +253,10 @@ const swapColor = () => {
   selectedBackgroundColor.value = selectedStrokeColor.value
   selectedStrokeColor.value = tempColor
   if (isFill.value) {
-    recentColor.value.isBackground = false
+    recentColor.value.isBackground = true
     recentColor.value.color = selectedBackgroundColor.value
   } else {
-    recentColor.value.isBackground = true
+    recentColor.value.isBackground = false
     recentColor.value.color = selectedStrokeColor.value
   }
   changePolygonColor()
