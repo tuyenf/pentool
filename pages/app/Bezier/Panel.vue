@@ -312,20 +312,27 @@ watch(polygon, (val) => {
   if (val && polygon.value) {
     if (polygon.value.strokeColor === 'none') {
       polygon.value.strokeColor = selectedStrokeColor.value
-    } else {
-      isFill.value = false
-      selectedStrokeColor.value = polygon.value.strokeColor
-      recentColor.value.color = polygon.value.strokeColor
     }
     if (polygon.value.backgroundColor === 'none') {
       polygon.value.backgroundColor = selectedBackgroundColor.value
-    } else {
-      isFill.value = true
-      selectedBackgroundColor.value = polygon.value.backgroundColor
-      recentColor.value.color = polygon.value.backgroundColor
     }
   }
 }, {deep: true})
+
+watch(() => polygon.value?.strokeColor, (val) => {
+  if (val && polygon.value?.strokeColor) {
+    isFill.value = false
+    selectedStrokeColor.value = polygon.value?.strokeColor
+    recentColor.value.color = polygon.value?.strokeColor
+  }
+})
+watch(() => polygon.value?.backgroundColor, (val) => {
+  if (val && polygon.value?.backgroundColor) {
+    isFill.value = true
+    selectedBackgroundColor.value = polygon.value?.backgroundColor
+    recentColor.value.color = polygon.value?.backgroundColor
+  }
+})
 </script>
 <style lang="scss" scoped>
 .notClick {

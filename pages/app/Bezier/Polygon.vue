@@ -3,7 +3,6 @@
       class="polygon"
      :id="`polygon-${i}`"
      :class="{
-            isFilled: polygon.isFilled,
             isSelected: targetPolygonIndex === i,
             isMoving: targetPolygonIndex === i && isMoveAPolygon,
           }"
@@ -103,11 +102,6 @@
             fill="#4E7FFF"
         ></rect>
       </g>
-      <polygon
-          v-if="polygon.isFilled"
-          :points="pointToString(polygon.nodes)"
-          :fill="[polygon.isFilled ? '#FF6D91' : 'transparent']"
-      />
     </g>
   </g>
   <!--START BOUNDING BOX-->
@@ -124,6 +118,7 @@
                        @update:isResetBoundingBox="(newVal) => isResetBoundingBox = newVal"
                        :isReCalcBoundingBox="isReCalcBoundingBox"
                        :isHideEditor="isHideEditor"
+                       v-model:isResizing="isResizing"
                        @update:boundingBox="(newVal) => boundingBox = newVal"
   />
   <!--END BOUNDING BOX-->
@@ -190,6 +185,7 @@ const tempActiveRect = ref<number>(-1)
 const mouseDownEvent = ref(null);
 const mousePressEvent = ref(null);
 const isMousePress = ref<boolean>(false);
+const isResizing = ref<boolean>(false);
 const fixedPolygonPosition = ref({
   x: 0,
   y: 0,
@@ -200,19 +196,23 @@ const isAlt = useKeyModifier(KEY_BOARD.ALT)
 
 onMounted(() => {
   nextTick(() => {
-    const svg = document.querySelector('svg')
+    const svg = document.getElementById('workspace')
     svg.addEventListener('mouseup', handleMouseUp)
   })
 })
 onUpdated(() => {
   const polygon = document.querySelectorAll('.polygon')
   if (!polygon) return
-  [...polygon].forEach((p: CommonModule.Polygon) => {
+  _forEach(polygon, (p: CommonModule.Polygon) => {
     onClickOutside(p, (event: any) => {
-      if (props.onDirectSelectionTool || props.onSelectionTool) {
-        isActiveNode.value = false
-        isHideEditor.value = true
+      if (!props.onDirectSelectionTool && !props.onSelectionTool) return
+      const resetVal = _debounce( () => isResizing.value = false, 500)
+      if (isResizing.value) {
+        resetVal()
+        return;
       }
+      isActiveNode.value = false
+      isHideEditor.value = true
     })
   })
 })
@@ -223,9 +223,8 @@ const checkIsShowEditor = (id: number, i: number, isRect?: boolean = false, inde
 
   const totalNodes = polygon.value && polygon.value.nodes.length || 0
   if (!totalNodes) return true
-
-  if (props.onDirectSelectionTool && !isActiveNode.value) return !isRect
   if (id !== targetPolygonIndex.value || !(props.onPenTool || props.onDirectSelectionTool) || isHideEditor.value) return true
+  if (props.onDirectSelectionTool && !isActiveNode.value) return !isRect
   if (isRect) return (isStageMove.value && targetRect === 0 && (i !== 1 && i !== 0 && i !== totalNodes - 1)) || (isStageMove.value && targetRect !== 0 && i !== targetRect && i !== targetRect - 1) || id !== targetPolygonIndex.value || !(props.onPenTool || props.onDirectSelectionTool) || isHideEditor.value
 
   if (targetRect === 0 && totalNodes > 1) {
@@ -266,10 +265,10 @@ const handleMouseUp = () => {
 const handleMouseDownPolygon = () => {
   if (!props.onSelectionTool || targetPolygonIndex.value < 0) return;
   isMoveAPolygon.value = true;
-  mousePressEvent.value = setTimeout(() => {
+  mousePressEvent.value = _delay(() => {
     isMousePress.value = true;
     document.addEventListener("mousemove", moveAPolygon);
-  }, 150);
+  }, 150, 'later');
 };
 const activePolygon = (i: number) => {
   if (!props.onSelectionTool && !props.onDirectSelectionTool) return;
@@ -292,22 +291,22 @@ const handleMoveControler = (event: MouseEvent, polygonId: number, nodeId: numbe
   targetPoint.value = nodeId
   targetPolygonIndex.value = polygonId;
   circleIndex.value = circleId;
-  mouseDownEvent.value = setTimeout(() => {
+  mouseDownEvent.value = _delay(() => {
     isMousePress.value = true;
     isMoveAController.value = true;
     document.addEventListener("mousemove", moveAController);
-  }, 100);
+  }, 100, 'later');
 };
 const handleMouseDownNode = (event: MouseEvent, polygonId: number, nodeId: number) => {
   activeRect.value = nodeId
   if (!props.onDirectSelectionTool) return;
   nodeIndex.value = nodeId;
   targetPolygonIndex.value = polygonId;
-  mouseDownEvent.value = setTimeout(() => {
+  mouseDownEvent.value = _delay(() => {
     isMousePress.value = true;
     isMoveAnAnchorPoint.value = true;
     document.addEventListener("mousemove", moveAnAnchorPoint);
-  }, 150);
+  }, 150, 'later');
 };
 const moveAnAnchorPoint = (e: MouseEvent) => {
   const newPosition = {
@@ -367,7 +366,7 @@ const updateNewPosition = () => {
   isMoveAPolygon.value = false;
   fixedPolygonPosition.value.x = 0;
   fixedPolygonPosition.value.y = 0;
-  polygon.value.nodes.forEach((node) => {
+  _forEach(polygon.value.nodes, (node) => {
     node.rect.x += fixedPolygonPosition.value.spaceX;
     node.rect.y += fixedPolygonPosition.value.spaceY;
     if (node.lines.length && node.circles.length) {
@@ -382,7 +381,7 @@ const updateNewPosition = () => {
     }
   });
 
-  polygon.value.segments.forEach((s, i) => {
+  _forEach(polygon.value.segments, (s, i) => {
     if (i === polygon.value.segments?.length - 1) {
       s.start.x += fixedPolygonPosition.value.spaceX;
       s.start.y += fixedPolygonPosition.value.spaceY;
@@ -424,7 +423,7 @@ const updateNewPosition = () => {
   fixedPolygonPosition.value.spaceX = 0;
   fixedPolygonPosition.value.spaceY = 0;
 
-  polygon.value.nodes.forEach((node) => {
+  _forEach(polygon.value.nodes, (node) => {
     if (!node.lines || !node.lines[0]) return;
     if (node.rect.x !== node.lines[0].x1) node.rect.x = node.lines[0].x1;
     if (node.rect.y !== node.lines[0].y1) node.rect.y = node.lines[0].y1;
@@ -548,14 +547,11 @@ const moveAPolygon = async (e: any) => {
   polygon.style.transform = `translate(${fixedPolygonPosition.value.spaceX}px, ${fixedPolygonPosition.value.spaceY}px)`;
   boundingBoxEl.style.transform = `translate(${fixedPolygonPosition.value.spaceX}px, ${fixedPolygonPosition.value.spaceY}px)`;
 };
-const pointToString = (nodes) => {
-  return nodes.map((point) => `${point.rect.x},${point.rect.y}`).join(" ");
-};
 
 watch(polygon, (val) => {
   if (val) {
     let path: string = ''
-    val.segments.forEach((segment: CommonModule.Segment, i) => {
+    _forEach(val.segments, (segment: CommonModule.Segment, i) => {
       if (i > 0) {
         path+=` L ${segment.start.x} ${segment.start.y} C ${segment.controlPoint1.x} ${segment.controlPoint1.y} ${segment.controlPoint2.x} ${segment.controlPoint2.y} ${segment.end.x} ${segment.end.y}`
       } else {

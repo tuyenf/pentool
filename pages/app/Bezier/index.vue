@@ -1,6 +1,10 @@
 <template>
   <div class="bezier-container">
     <div ref="imgContainerElement" class="workspace">
+      <!--START BEZIER GRID-->
+      <bezier-grid></bezier-grid>
+      <!--END BEZIER GRID-->
+
       <!--START BEZIER PANEL-->
       <bezier-panel
           v-model:onPenTool="onPenTool"
@@ -53,6 +57,7 @@
 import {BUBBLE_TEMPLATES, KEY_BOARD} from "~/lib/utils/contants";
 import BezierPanel from "~/pages/app/Bezier/Panel.vue";
 import BezierPolygon from "~/pages/app/Bezier/Polygon.vue";
+import BezierGrid from "~/pages/app/Bezier/Grid.vue"
 import {useKeyModifier} from "@vueuse/core";
 import {CommonModule} from "~/lib/types/common";
 import {StorageService} from "~/lib/utils/StorageService";
@@ -127,7 +132,7 @@ const mouseDown = (event: MouseEvent) => {
   targetPolygonIndex.value = -1
 
   document.addEventListener('mouseup', mouseUp)
-  mouseDownEvent.value = setTimeout(() => {
+  mouseDownEvent.value = _delay(() => {
     isMousePress.value = true
     virtualRectangle.value.top = event.clientY
     virtualRectangle.value.left = event.clientX
@@ -136,7 +141,7 @@ const mouseDown = (event: MouseEvent) => {
     virtualRectangleElement.value.style.left = virtualRectangle.value.left + 'px'
     virtualRectangleElement.value.style.opacity = '1'
     document.addEventListener('mousemove', mouseMove)
-  }, 150)
+  }, 150, 'later')
 }
 const mouseMove = (event: MouseEvent) => {
   event.stopPropagation();
@@ -173,7 +178,7 @@ const mouseUp = (event: MouseEvent) => {
   isDrawingSpeechBubble.value = true
   targetPolygonIndex.value = polygons.value.length;
   let bubbleTemplates = JSON.parse(JSON.stringify(BUBBLE_TEMPLATES))
-  if (isSelectedBubbleType.value && isSelectedBubbleType.value.isManual) bubbleTemplates = [].concat(StorageService.get('bubbleTemplates'))
+  if (isSelectedBubbleType.value && isSelectedBubbleType.value.isManual) bubbleTemplates = _concat([], StorageService.get('bubbleTemplates'))
   if (isSelectedBubbleType.value) polygons.value.push(bubbleTemplates[isSelectedBubbleType.value.type])
   if (virtualRectangleElement.value) virtualRectangleElement.value.style.opacity = '0'
   isStageEnded.value[targetPolygonIndex.value] = true
@@ -191,10 +196,10 @@ const handleMouseUp = () => {
 const handleMouseDown = (event: MouseEvent) => {
   if (!onPenTool.value) return;
   if (!isStageEnded.value[targetPolygonIndex.value] || !onDirectSelectionTool.value) stageStarted(event);
-  mouseDownEvent.value = setTimeout(() => {
+  mouseDownEvent.value = _delay(() => {
     isMousePress.value = true;
     document.addEventListener("mousemove", curveStarted);
-  }, 150);
+  }, 150, 'later');
 };
 /* Drawing
 * */
@@ -387,7 +392,7 @@ const preventMouseOut = () => {
       document.addEventListener('mouseup', handleMouseUpOutsideWindow)
       const targetNode = document.getElementById(`anchorPoint-${targetPolygonIndex.value}-${targetPoint.value}`)
       if (!targetNode) return
-      targetNode.childNodes.forEach((node: any) => {
+      _forEach(targetNode.childNodes, (node: any) => {
         if (node.tagName === 'line' || node.tagName === 'circle') node.style.opacity = '0'
       })
     }
@@ -401,7 +406,7 @@ const preventMouseOver = () => {
     if (pathAbsolute) pathAbsolute.style.opacity = '1'
     const targetNode = document.getElementById(`anchorPoint-${targetPolygonIndex.value}-${targetPoint.value}`)
     if (!targetNode) return
-    targetNode.childNodes.forEach((node: any) => {
+    _forEach(targetNode.childNodes, (node: any) => {
       if (node.tagName === 'line' || node.tagName === 'circle') node.style.opacity = '1'
     })
   })
@@ -512,6 +517,15 @@ watch(onFillTool, (val) => {
     imgContainerElement.value.classList.remove("stageStarted");
   } else if (onPenTool.value) {
     imgContainerElement.value.classList.add("stageStarted");
+  }
+})
+watch(onDrawSpeechBubble, (val) => {
+  if (!imgContainerElement.value) return
+  if (val) {
+    imgContainerElement.value.classList.add("drawSpeech");
+  } else {
+    imgContainerElement.value.classList.remove("drawSpeech");
+
   }
 })
 watch(

@@ -17,6 +17,9 @@ img {
     url("@/assets/images/pentool.png") 8 0,
     crosshair;
 }
+.drawSpeech {
+  cursor: crosshair;
+}
 .bezier {
   &-container {
     @include size(100vw, 100vh);
@@ -28,10 +31,10 @@ img {
     flex-wrap: wrap;
     align-content: flex-start;
     justify-content: flex-start;
-    flex-wrap: wrap;
     position: absolute;
-    top: 40px;
-    left: 40px;
+    top: 0;
+    left: 0;
+    z-index: 999999;
   }
   &-tool {
     height: 30px;
@@ -231,9 +234,8 @@ img {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: calc(100vw - 200px);
-  height: calc(100vh - 80px);
-  border: 1px solid salmon;
+  width: 100vw;
+  height: 100vh;
 }
 
 #endpoint,
@@ -260,9 +262,6 @@ img {
       stroke: #4e7fff !important
     }
   }
-}
-.polygon.isFilled path {
-  fill: #ff6d91;
 }
 rect.isEditing:hover,
 circle.isEditing:hover {
@@ -364,4 +363,24 @@ circle {
   transform: translate(-50%, -50%);
   z-index: 99999;
   cursor: pointer;
+}
+
+#bezier-grid {
+  user-select: none;
+  pointer-events: none;
+  z-index: -1;
+}
+line.grid[_ngcontent-khl-c93] {
+  stroke: #555A63;
+  user-select: none;
+  pointer-events: none;
+  z-index: -1;
+}
+*[_ngcontent-ehe-c94] {
+  box-sizing: border-box;
+}
+[_nghost-ehe-c93] {
+  background-color: #1e1e1e;
+  -webkit-user-select: none;
+  user-select: none;
 }

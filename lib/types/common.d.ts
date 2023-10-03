@@ -38,7 +38,6 @@ declare namespace CommonModule {
     nodes: Node[];
     pathAbsolute?: Segment;
     coordinates?: string;
-    isFilled?: boolean;
     backgroundColor: string,
     strokeColor: string
   }
