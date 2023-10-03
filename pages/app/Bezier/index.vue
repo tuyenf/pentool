@@ -54,7 +54,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import {BUBBLE_TEMPLATES, KEY_BOARD} from "~/lib/utils/contants";
+import {BUBBLE_TEMPLATES, FILL_TYPES, KEY_BOARD} from "~/lib/utils/contants";
 import BezierPanel from "~/pages/app/Bezier/Panel.vue";
 import BezierPolygon from "~/pages/app/Bezier/Polygon.vue";
 import BezierGrid from "~/pages/app/Bezier/Grid.vue"
@@ -235,8 +235,10 @@ const stageStarted = (e: MouseEvent, isEnd?: boolean) => {
       nodes: [firstNode],
       segments: [],
       path: '',
-      backgroundColor: 'none',
-      strokeColor: 'none'
+      backgroundColor: FILL_TYPES.DEFAULT,
+      strokeColor: FILL_TYPES.DEFAULT,
+      isGradientBackground: false,
+      isGradientStroke: false
     });
     targetPoint.value = 0;
     createNewPolygon.value = false;

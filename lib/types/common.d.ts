@@ -39,7 +39,9 @@ declare namespace CommonModule {
     pathAbsolute?: Segment;
     coordinates?: string;
     backgroundColor: string,
-    strokeColor: string
+    strokeColor: string,
+    isGradientBackground: boolean,
+    isGradientStroke: boolean
   }
 
   interface BoundingBox {
@@ -101,7 +103,17 @@ declare namespace CommonModule {
     }
   }
   interface RecentColor {
-    color: string,
-    isBackground: boolean
+    degree?: number;
+    points?: [IPoitItem];
+    style?: string;
+    type?: string;
+    color?: string,
+    isBackground?: boolean,
+  }
+
+
+  interface SelectedColor {
+    color: string;
+    isGradient: boolean
   }
 }

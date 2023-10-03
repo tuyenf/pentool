@@ -8,6 +8,47 @@ export const COLOR_TYPES = {
   COLORS: 'colors',
   PICKER: 'picker',
 }
+
+export const FILL_TYPES = {
+  COLOR: 'color',
+  GRADIENT: 'gradient',
+  DEFAULT: 'none',
+}
+export const GRADIENT_DEFAULT = {
+  points: [
+    {
+      "left": 0,
+      "red": 0,
+      "green": 0,
+      "blue": 0,
+      "alpha": 1
+    },
+    {
+      "left": 0,
+      "red": 0,
+      "green": 0,
+      "blue": 0,
+      "alpha": 1
+    },
+    {
+      "left": 100,
+      "red": 0,
+      "green": 0,
+      "blue": 0,
+      "alpha": 0
+    },
+    {
+      "left": 100,
+      "red": 0,
+      "green": 0,
+      "blue": 0,
+      "alpha": 1
+    }
+  ],
+  type: "linear",
+  degree: 90,
+  style: "linear-gradient(90deg,rgba(0, 0, 0, 1) 0%,rgba(0, 0, 0, 1) 0%,rgba(0, 0, 0, 0) 100%,rgba(0, 0, 0, 1) 100%)"
+}
 export const BUBBLE_TEMPLATES = [
   {
     nodes: [
@@ -128,7 +169,9 @@ export const BUBBLE_TEMPLATES = [
     ],
     name: "Bubble 1",
     backgroundColor: '#ffffff40',
-    strokeColor: '#4e7fff'
+    strokeColor: '#4e7fff',
+    isGradientBackground: false,
+    isGradientStroke: false
   },
   {
     nodes: [
@@ -337,7 +380,9 @@ export const BUBBLE_TEMPLATES = [
     ],
     name: "Bubble 2",
     backgroundColor: '#ffffff40',
-    strokeColor: '#4e7fff'
+    strokeColor: '#4e7fff',
+    isGradientBackground: false,
+    isGradientStroke: false
   },
   {
     nodes: [
@@ -697,6 +742,8 @@ export const BUBBLE_TEMPLATES = [
     name: "Bubble 3",
     strokeColor: '#4e7fff',
     backgroundColor: '#ffffff40',
+    isGradientBackground: false,
+    isGradientStroke: false
   },
   {
     nodes: [
@@ -1033,6 +1080,8 @@ export const BUBBLE_TEMPLATES = [
     ],
     name: "Bubble 3",
     backgroundColor: '#ffffff40',
-    strokeColor: '#4e7fff'
+    strokeColor: '#4e7fff',
+    isGradientBackground: false,
+    isGradientStroke: false
   }
 ]

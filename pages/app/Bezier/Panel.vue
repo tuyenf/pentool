@@ -82,59 +82,71 @@
     <div class="bezier-tool bezier-tool-color"
     >
       <img @click="swapColor" class="bezier-tool-color-arrow" src="~/assets/images/2-way-arrow.png" alt="" />
-      <div @click="isFill = true"
+      <div @click="activeFill(true)"
            @dblclick="showColorPicker"
-           :class="{isNotActive: selectedBackgroundColor === 'none'}"
-           :style="{backgroundColor: selectedBackgroundColor !== 'none' ? selectedBackgroundColor : '#ffffff',
-           zIndex: isFill ? 99 : 98}"
+           :class="{isNotActive: selectedBackgroundColor.color === 'none'}"
+           :style="{backgroundColor: selectedBackgroundColor.color !== 'none' && !selectedBackgroundColor.isGradient ? selectedBackgroundColor.color : '#ffffff',
+           zIndex: isFill ? 99 : 98, backgroundImage: selectedBackgroundColor.color !== 'none' && selectedBackgroundColor.isGradient ? selectedBackgroundColor.color : FILL_TYPES.DEFAULT}"
            class="bezier-tool__fill bezier-tool-color-item">
         <div class="bezier-tool__name">{{ isFill ? 'Fill' : 'Fill (click to activate)'}}</div>
       </div>
-      <div @click="isFill = false"
+      <div @click="activeFill(false)"
            @dblclick="showColorPicker"
-           :class="{isNotActive: selectedStrokeColor === 'none'}"
-           :style="{backgroundColor: selectedStrokeColor !== 'none' ? selectedStrokeColor : '#ffffff',
+           :class="{isNotActive: selectedStrokeColor.color === 'none'}"
+           :style="{backgroundColor: selectedStrokeColor.color !== 'none' && !selectedStrokeColor.isGradient ? selectedStrokeColor.color : '#ffffff',
+            backgroundImage: selectedStrokeColor.color !== 'none' && selectedStrokeColor.isGradient ? selectedStrokeColor.color : FILL_TYPES.DEFAULT,
             zIndex: isFill ? 98 : 99}"
            class="bezier-tool__stroke bezier-tool-color-item">
         <div class="bezier-tool__name">{{ !isFill ? 'Stroke' : 'Stroke (click to activate)'}}</div>
       </div>
       <div class="bezier-tool-color-reset">
-        <div @click="resetColor('color')"
-             :class="{isActive: isActive === 'color'}"
+        <div @click="changeColorMode(FILL_TYPES.COLOR)"
+             :class="{isActive: isActive === FILL_TYPES.COLOR}"
              class="bezier-tool-color-reset-item">
           <div :style="{backgroundColor: recentColor.color}"
                :class="{isStroke: !recentColor.isBackground}"
               class="bezier-tool-color-reset-icon bezier-tool-color-reset__white"></div>
-          <div class="bezier-tool__name">Color</div>
+          <div class="bezier-tool__name">{{ FILL_TYPES.COLOR.toUpperCase() }}</div>
         </div>
-        <div @click="resetColor('gradient')"
-             :class="{isActive: isActive === 'gradient'}"
+        <div @click="changeColorMode(FILL_TYPES.GRADIENT)"
+             @dblclick="showColorPicker"
+             :class="{isActive: isActive === FILL_TYPES.GRADIENT}"
              class="bezier-tool-color-reset-item">
-          <div class="bezier-tool-color-reset-icon bezier-tool-color-reset__gradient"></div>
-          <div class="bezier-tool__name">Gradient</div>
+          <div :style="{backgroundImage: recentGradientColor.style ?? GRADIENT_DEFAULT.style}"
+               class="bezier-tool-color-reset-icon bezier-tool-color-reset__gradient"></div>
+          <div class="bezier-tool__name">{{ FILL_TYPES.GRADIENT.toUpperCase() }}</div>
         </div>
-        <div @click="resetColor()"
-             :class="{isActive: isActive === 'none'}"
+        <div @click="changeColorMode()"
+             :class="{isActive: isActive === FILL_TYPES.DEFAULT}"
              class="bezier-tool-color-reset-item">
           <div class="bezier-tool-color-reset-icon bezier-tool-color-reset__none"></div>
-          <div class="bezier-tool__name">None</div>
+          <div class="bezier-tool__name">{{ FILL_TYPES.DEFAULT.toUpperCase() }}</div>
         </div>
       </div>
     </div>
   </div>
   <div id="colorPicker" v-if="onFillTool">
-    <color-picker
+    <color-picker v-if="isActive === FILL_TYPES.GRADIENT"
+                  id="colorGradientColor"
+                  :is-gradient="true"
+                  :gradient="recentGradientColor"
+                  @start-change="(color) => onChange(color, 'start')"
+                  @change="(color) => onChange(color, 'change')"
+                  @end-change="(color) => onChange(color, 'end')"
+    ></color-picker>
+    <color-picker-normal v-else
                   :color="getColor"
                   @color-change="({ colors }) => onColorPickerChange(colors)"
-    ></color-picker>
-
+    ></color-picker-normal>
   </div>
 </template>
 <script lang="ts" setup>
-import {BUBBLE_TEMPLATES, COLOR_TYPES} from "~/lib/utils/contants";
+import {BUBBLE_TEMPLATES, COLOR_TYPES, FILL_TYPES, GRADIENT_DEFAULT} from "~/lib/utils/contants";
 import {StorageService} from "~/lib/utils/StorageService";
 import {CommonModule} from "~/lib/types/common";
-import { ColorPicker } from 'vue-accessible-color-picker'
+import { ColorPicker as ColorPickerNormal } from 'vue-accessible-color-picker'
+import ColorPicker from 'color-gradient-picker-vue3';
+import 'color-gradient-picker-vue3/dist/style.css';
 import {onClickOutside} from "@vueuse/core";
 
 interface IProps {
@@ -166,13 +178,20 @@ const isManual = ref<boolean>(false)
 const isRequestSubmit = ref<boolean>(false)
 const polygon = useVModel(props, 'polygon', emits)
 const isFill = ref<boolean>(true)
-const selectedBackgroundColor = ref<string>('none')
-const selectedStrokeColor = ref<string>('none')
+const selectedBackgroundColor = ref<CommonModule.SelectedColor>({
+  color: FILL_TYPES.DEFAULT,
+  isGradient: false
+})
+const selectedStrokeColor = ref<CommonModule.SelectedColor>({
+  color: FILL_TYPES.DEFAULT,
+  isGradient: false
+})
 const  recentColor = ref<CommonModule.RecentColor>({
   isBackground: true,
-  color: 'none'
+  color: '#ffffff'
 })
-const isActive = ref<string>('color')
+const recentGradientColor = ref(GRADIENT_DEFAULT)
+const isActive = ref<string>(FILL_TYPES.COLOR)
 const alpha = ref(1)
 const activeEle = ref({
   type: COLOR_TYPES.PICKER,
@@ -186,11 +205,16 @@ const color = ref({
   blue: 0,
   alpha: 1
 })
-const onChange = (attrs, name) => {
-  color.value = { ...attrs };
-}
+const onChange = (attrs: any) => {
+  recentGradientColor.value = {...attrs}
+  if (isFill.value)  selectedBackgroundColor.value.color = recentGradientColor.value.style
+  else selectedStrokeColor.value.color = recentGradientColor.value.style
+};
 const getColor = computed(() => {
-  return isFill.value && selectedBackgroundColor.value !== 'none' ? selectedBackgroundColor.value : selectedStrokeColor.value !== 'none' ? selectedStrokeColor.value : '#000'
+  return isFill.value && selectedBackgroundColor.value.color !== FILL_TYPES.DEFAULT && !selectedBackgroundColor.value.isGradient
+      ? selectedBackgroundColor.value.color
+      : selectedStrokeColor.value.color !== FILL_TYPES.DEFAULT && !selectedStrokeColor.value.isGradient
+      ? selectedStrokeColor.value.color : '#000'
 })
 
 onBeforeMount(() => {
@@ -221,14 +245,14 @@ const onActiveEleChange = (type: string, index = 0) => {
   }
 }
 const updateColor = (value: string) => {
-  if (!value || value === '#000' || isActive.value === 'none') return
+  if (!value || value === '#000') return
   recentColor.value.color = value
-  isActive.value = 'color'
+  isActive.value = FILL_TYPES.COLOR
   if (!isFill.value) {
-    selectedStrokeColor.value = value
+    selectedStrokeColor.value.color = value
     recentColor.value.isBackground = false
   } else {
-    selectedBackgroundColor.value = value
+    selectedBackgroundColor.value.color = value
     recentColor.value.isBackground = true
   }
 
@@ -249,29 +273,71 @@ const showColorPicker = () => {
   emits("update:onFillTool", true);
 }
 const swapColor = () => {
-  const tempColor = selectedBackgroundColor.value
+  let tempColor = selectedBackgroundColor.value
+
   selectedBackgroundColor.value = selectedStrokeColor.value
   selectedStrokeColor.value = tempColor
+
   if (isFill.value) {
     recentColor.value.isBackground = true
-    recentColor.value.color = selectedBackgroundColor.value
+    if (!selectedBackgroundColor.value.isGradient && selectedBackgroundColor.value.color !== FILL_TYPES.DEFAULT) {
+      recentColor.value.color = selectedBackgroundColor.value.color
+      isActive.value = FILL_TYPES.COLOR
+    } else {
+      isActive.value = FILL_TYPES.GRADIENT
+    }
+    if (selectedBackgroundColor.value.color === FILL_TYPES.DEFAULT) isActive.value = FILL_TYPES.DEFAULT
   } else {
     recentColor.value.isBackground = false
-    recentColor.value.color = selectedStrokeColor.value
+    if (!selectedStrokeColor.value.isGradient && selectedStrokeColor.value.color !== FILL_TYPES.DEFAULT) {
+      recentColor.value.color = selectedStrokeColor.value.color
+      isActive.value = FILL_TYPES.COLOR
+    } else {
+      isActive.value = FILL_TYPES.GRADIENT
+    }
+    if (selectedStrokeColor.value.color === FILL_TYPES.DEFAULT) isActive.value = FILL_TYPES.DEFAULT
   }
+
   changePolygonColor()
 }
-const resetColor = (type?: string = 'none') => {
+const changeColorMode = (type?: string = FILL_TYPES.DEFAULT) => {
   isActive.value = type
-  if (type === 'color') {
-    if (isFill.value) selectedBackgroundColor.value = recentColor.value.color
-    else selectedStrokeColor.value = recentColor.value.color
-  } else if (type === 'gradient') {
-
-  } else if (isFill.value) {
-    selectedBackgroundColor.value = 'none'
+  if (type === FILL_TYPES.COLOR) {
+    if (isFill.value) {
+      selectedBackgroundColor.value = {
+        color: recentColor.value.color ?? '#ffffff',
+        isGradient: false
+      }
+    } else {
+      selectedStrokeColor.value = {
+        color: recentColor.value.color ?? '#ffffff',
+        isGradient: false
+      }
+    }
+  } else if (type === FILL_TYPES.GRADIENT) {
+    if (isFill.value) {
+      selectedBackgroundColor.value = {
+        color: recentGradientColor.value.style,
+        isGradient: true
+      }
+    } else {
+      selectedStrokeColor.value = {
+        color: recentGradientColor.value.style,
+        isGradient: true
+      }
+    }
   } else {
-    selectedStrokeColor.value = 'none'
+    if (isFill.value) {
+      selectedBackgroundColor.value = {
+        color: FILL_TYPES.DEFAULT,
+        isGradient: false
+      }
+    } else {
+      selectedStrokeColor.value = {
+        color: FILL_TYPES.DEFAULT,
+        isGradient: false
+      }
+    }
   }
   changePolygonColor()
 }
@@ -284,8 +350,18 @@ const drawSpeechBubble = (type: number, label: boolean) => {
 };
 const changePolygonColor = () => {
   if (!polygon.value) return
-  polygon.value.backgroundColor = selectedBackgroundColor.value
-  polygon.value.strokeColor = selectedStrokeColor.value
+  polygon.value.backgroundColor = selectedBackgroundColor.value.color
+  polygon.value.strokeColor = selectedStrokeColor.value.color
+  if (selectedBackgroundColor.value.isGradient) polygon.value.isGradientBackground = true
+  if (selectedStrokeColor.value.isGradient) polygon.value.isGradientStroke = true
+}
+const activeFill = (fill?: boolean = false) => {
+  isFill.value = fill
+  if (fill) {
+    isActive.value = selectedBackgroundColor.value.color === FILL_TYPES.DEFAULT ? isActive.value = FILL_TYPES.DEFAULT : selectedBackgroundColor.value.isGradient ? FILL_TYPES.GRADIENT : FILL_TYPES.COLOR
+  } else {
+    isActive.value = selectedStrokeColor.value.color === FILL_TYPES.DEFAULT ? isActive.value = FILL_TYPES.DEFAULT : selectedStrokeColor.value.isGradient ? FILL_TYPES.GRADIENT : FILL_TYPES.COLOR
+  }
 }
 const save = () => {
   if (savedTemplates.value.length === 11) {
@@ -313,36 +389,27 @@ const deleteTemplate = (index: number) => {
 
 watch(polygon, (val) => {
   if (val && polygon.value) {
-    if (polygon.value.strokeColor === 'none') {
-      polygon.value.strokeColor = selectedStrokeColor.value
+    if (polygon.value.strokeColor === FILL_TYPES.DEFAULT) {
+      polygon.value.strokeColor = selectedStrokeColor.value.color
     }
-    if (polygon.value.backgroundColor === 'none') {
-      polygon.value.backgroundColor = selectedBackgroundColor.value
+    if (polygon.value.backgroundColor === FILL_TYPES.DEFAULT) {
+      polygon.value.backgroundColor = selectedBackgroundColor.value.color
     }
   }
 }, {deep: true})
 
 watch(() => polygon.value?.strokeColor, (val) => {
-  if (val && polygon.value?.strokeColor !== 'none') {
+  if (val && polygon.value?.strokeColor !== FILL_TYPES.DEFAULT) {
     isFill.value = false
-    selectedStrokeColor.value = polygon.value?.strokeColor ?? 'none'
-    recentColor.value.color = polygon.value?.strokeColor ?? 'none'
+    selectedStrokeColor.value.color = polygon.value?.strokeColor ?? FILL_TYPES.DEFAULT
+    recentColor.value.color = polygon.value?.strokeColor ?? FILL_TYPES.DEFAULT
   }
 })
 watch(() => polygon.value?.backgroundColor, (val) => {
-  if (val && polygon.value?.backgroundColor !== 'none') {
+  if (val && polygon.value?.backgroundColor !== FILL_TYPES.DEFAULT) {
     isFill.value = true
-    selectedBackgroundColor.value = polygon.value?.backgroundColor ?? 'none'
-    recentColor.value.color = polygon.value?.backgroundColor ?? 'none'
-  }
-})
-watch(isFill, (val) => {
-  if (val && selectedBackgroundColor.value !== 'none') {
-    recentColor.value.isBackground = true
-    recentColor.value.color = selectedBackgroundColor.value
-  } else if (selectedStrokeColor.value !== 'none') {
-    recentColor.value.isBackground = false
-    recentColor.value.color = selectedStrokeColor.value
+    selectedBackgroundColor.value.color = polygon.value?.backgroundColor ?? FILL_TYPES.DEFAULT
+    recentColor.value.color = polygon.value?.backgroundColor ?? FILL_TYPES.DEFAULT
   }
 })
 </script>

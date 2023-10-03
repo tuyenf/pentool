@@ -10,16 +10,26 @@
      @click="activePolygon(i)"
   >
     <defs>
-<!--      <linearGradient  v-for="(segment, index) in polygon.segments"
+      <linearGradient  v-for="(segment, index) in polygon.segments"
                        :key="index"
-          :id="`decoration-${index}`"
+          :id="`background-${index}`"
           :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
           gradientUnits="userSpaceOnUse"
           class="gradient">
         <stop offset="0" stop-color="#FF4D81"></stop>
         <stop offset="0.5" stop-color="#FA8172"></stop>
         <stop offset="1" stop-color="#FF4D81"></stop>
-      </linearGradient>-->
+      </linearGradient>
+      <linearGradient  v-for="(segment, index) in polygon.segments"
+                       :key="index"
+                       :id="`stroke-${index}`"
+                       :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
+                       gradientUnits="userSpaceOnUse"
+                       class="gradient">
+        <stop offset="0" stop-color="#FF4D81"></stop>
+        <stop offset="0.5" stop-color="#FA8172"></stop>
+        <stop offset="1" stop-color="#FF4D81"></stop>
+      </linearGradient>
       <linearGradient v-if="polygon.pathAbsolute && !isStageEnded[i]"
                       id="decorationAbsolute"
                       :x1="polygon.pathAbsolute?.start?.x"
@@ -54,7 +64,11 @@
           fill="none"
           :stroke="[targetPolygonIndex === i ? '#4e7fff' : 'none']"
       ></path>
-      <path v-if="polygon.path" :d="polygon.path" :fill="polygon.backgroundColor" :stroke="polygon.strokeColor" style="opacity: 1"></path>
+      <path v-if="polygon.path"
+            :d="polygon.path"
+            :fill="[polygon.isGradientBackground ? `url(#background-${i})` : polygon.backgroundColor]"
+            :stroke="[polygon.isGradientStroke ? `url(#stroke-${i})` : polygon.strokeColor]"
+            style="opacity: 1"></path>
     </g>
     <g :id="`anchorPoints-${i}`">
       <g
