@@ -254,8 +254,10 @@ const swapColor = () => {
   selectedStrokeColor.value = tempColor
   if (isFill.value) {
     recentColor.value.isBackground = false
+    recentColor.value.color = selectedBackgroundColor.value
   } else {
     recentColor.value.isBackground = true
+    recentColor.value.color = selectedStrokeColor.value
   }
   changePolygonColor()
 }
@@ -266,8 +268,9 @@ const resetColor = (type?: string = 'none') => {
     else selectedStrokeColor.value = recentColor.value.color
   } else if (type === 'gradient') {
 
-  } else {
+  } else if (isFill.value) {
     selectedBackgroundColor.value = 'none'
+  } else {
     selectedStrokeColor.value = 'none'
   }
   changePolygonColor()
@@ -320,17 +323,26 @@ watch(polygon, (val) => {
 }, {deep: true})
 
 watch(() => polygon.value?.strokeColor, (val) => {
-  if (val && polygon.value?.strokeColor) {
+  if (val && polygon.value?.strokeColor !== 'none') {
     isFill.value = false
-    selectedStrokeColor.value = polygon.value?.strokeColor
-    recentColor.value.color = polygon.value?.strokeColor
+    selectedStrokeColor.value = polygon.value?.strokeColor ?? 'none'
+    recentColor.value.color = polygon.value?.strokeColor ?? 'none'
   }
 })
 watch(() => polygon.value?.backgroundColor, (val) => {
-  if (val && polygon.value?.backgroundColor) {
+  if (val && polygon.value?.backgroundColor !== 'none') {
     isFill.value = true
-    selectedBackgroundColor.value = polygon.value?.backgroundColor
-    recentColor.value.color = polygon.value?.backgroundColor
+    selectedBackgroundColor.value = polygon.value?.backgroundColor ?? 'none'
+    recentColor.value.color = polygon.value?.backgroundColor ?? 'none'
+  }
+})
+watch(isFill, (val) => {
+  if (val && selectedBackgroundColor.value !== 'none') {
+    recentColor.value.isBackground = true
+    recentColor.value.color = selectedBackgroundColor.value
+  } else if (selectedStrokeColor.value !== 'none') {
+    recentColor.value.isBackground = false
+    recentColor.value.color = selectedStrokeColor.value
   }
 })
 </script>
