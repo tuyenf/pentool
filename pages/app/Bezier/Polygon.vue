@@ -562,6 +562,11 @@ const moveAPolygon = async (e: any) => {
   boundingBoxEl.style.transform = `translate(${fixedPolygonPosition.value.spaceX}px, ${fixedPolygonPosition.value.spaceY}px)`;
 };
 
+watch(() => props.onPenTool, (val) => {
+  if (val) {
+    isHideEditor.value = false
+  }
+})
 watch(polygon, (val) => {
   if (val) {
     let path: string = ''
