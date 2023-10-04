@@ -38,10 +38,20 @@ declare namespace CommonModule {
     nodes: Node[];
     pathAbsolute?: Segment;
     coordinates?: string;
-    backgroundColor: string,
-    strokeColor: string,
-    isGradientBackground: boolean,
-    isGradientStroke: boolean
+    colors: ColorItem
+  }
+
+  interface Color {
+    isGradient: boolean,
+    points?: IPoitItem[];
+    type?:   string;
+    degree?: number;
+    style:  string;
+  }
+
+  interface ColorItem {
+    fill: Color,
+    stroke: Color
   }
 
   interface BoundingBox {
@@ -107,10 +117,16 @@ declare namespace CommonModule {
     points?: [IPoitItem];
     style?: string;
     type?: string;
-    color?: string,
     isBackground?: boolean,
   }
 
+  interface IPoitItem {
+    left:  number;
+    red:   number;
+    green: number;
+    blue:  number;
+    alpha: number;
+  }
 
   interface SelectedColor {
     color: string;

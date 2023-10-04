@@ -10,26 +10,62 @@
      @click="activePolygon(i)"
   >
     <defs>
-      <linearGradient  v-for="(segment, index) in polygon.segments"
-                       :key="index"
-          :id="`background-${index}`"
-          :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
-          gradientUnits="userSpaceOnUse"
-          class="gradient">
-        <stop offset="0" stop-color="#FF4D81"></stop>
-        <stop offset="0.5" stop-color="#FA8172"></stop>
-        <stop offset="1" stop-color="#FF4D81"></stop>
-      </linearGradient>
-      <linearGradient  v-for="(segment, index) in polygon.segments"
-                       :key="index"
-                       :id="`stroke-${index}`"
-                       :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
-                       gradientUnits="userSpaceOnUse"
-                       class="gradient">
-        <stop offset="0" stop-color="#FF4D81"></stop>
-        <stop offset="0.5" stop-color="#FA8172"></stop>
-        <stop offset="1" stop-color="#FF4D81"></stop>
-      </linearGradient>
+      <template v-if="polygon.colors.fill.type === GRADIENT_TYPE.LINEAR">
+        <linearGradient  v-for="(segment, index) in polygon.segments"
+                         :key="index"
+                         :id="`background-${index}`"
+                         :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
+                         gradientUnits="userSpaceOnUse"
+                         class="gradient">
+          <stop v-for="(color, idx) in polygon.colors.fill.points"
+                :key="idx"
+                :offset="`${color.left}%`"
+                :stop-color="`rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})`">
+          </stop>
+        </linearGradient>
+      </template>
+      <template v-else>
+        <radialGradient  v-for="(segment, index) in polygon.segments"
+                         :key="index"
+                         :id="`background-${index}`"
+                         :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
+                         gradientUnits="userSpaceOnUse"
+                         class="gradient">
+          <stop v-for="(color, idx) in polygon.colors.fill.points"
+                :key="idx"
+                :offset="`${color.left}%`"
+                :stop-color="`rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})`">
+          </stop>
+        </radialGradient>
+      </template>
+      <template v-if="polygon.colors.stroke.type === GRADIENT_TYPE.LINEAR">
+        <linearGradient  v-for="(segment, index) in polygon.segments"
+                         :key="index"
+                         :id="`stroke-${index}`"
+                         :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
+                         gradientUnits="userSpaceOnUse"
+                         class="gradient">
+          <stop v-for="(color, idx) in polygon.colors.stroke.points"
+                :key="idx"
+                :offset="`${color.left}%`"
+                :stop-color="`rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})`">
+          </stop>
+        </linearGradient>
+      </template>
+      <template v-else>
+        <radialGradient  v-for="(segment, index) in polygon.segments"
+                         :key="index"
+                         :id="`stroke-${index}`"
+                         :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
+                         gradientUnits="userSpaceOnUse"
+                         class="gradient">
+          <stop v-for="(color, idx) in polygon.colors.stroke.points"
+                :key="idx"
+                :offset="`${color.left}%`"
+                :stop-color="`rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})`">
+          </stop>
+        </radialGradient>
+      </template>
       <linearGradient v-if="polygon.pathAbsolute && !isStageEnded[i]"
                       id="decorationAbsolute"
                       :x1="polygon.pathAbsolute?.start?.x"
@@ -66,8 +102,8 @@
       ></path>
       <path v-if="polygon.path"
             :d="polygon.path"
-            :fill="[polygon.isGradientBackground ? `url(#background-${i})` : polygon.backgroundColor]"
-            :stroke="[polygon.isGradientStroke ? `url(#stroke-${i})` : polygon.strokeColor]"
+            :fill="[polygon.colors.fill.isGradient ? `url(#background-${i})` : polygon.colors.fill.style]"
+            :stroke="[polygon.colors.stroke.isGradient ? `url(#stroke-${i})` : polygon.colors.stroke.style]"
             style="opacity: 1"></path>
     </g>
     <g :id="`anchorPoints-${i}`">
@@ -140,7 +176,7 @@
 <script lang="ts" setup>
 import BezierBoundingBox from "~/pages/app/Bezier/BoundingBox.vue"
 import {onClickOutside, useKeyModifier} from "@vueuse/core";
-import {KEY_BOARD} from "~/lib/utils/contants";
+import {GRADIENT_TYPE, KEY_BOARD} from "~/lib/utils/contants";
 import {getMinMaxValue} from "~/lib/utils/global";
 
 interface IProps {
