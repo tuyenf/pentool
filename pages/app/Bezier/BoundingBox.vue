@@ -2,6 +2,7 @@
   <g
       id="bounding-box"
       ref="boundingElement"
+      :style="{opacity: isHideEditor ? 0 : 1}"
       v-if="
             boundingBox.handlers.length &&
             boundingBox.segments.length &&
@@ -33,13 +34,13 @@
                         C ${segment.start.x} ${segment.start.y} ${segment.end.x}
                         ${segment.end.y} ${segment.end.x} ${segment.end.y}`"
         :id="`bounding-segment-${index}`"
-        style="opacity: 1"
         stroke="#4E7FFF"
     ></path>
   </g>
 </template>
 <script lang="ts" setup>
 import {getMinMaxValue, bezierMinMax} from "~/lib/utils/global";
+import {StorageService} from "~/lib/utils/StorageService";
 interface IProps {
   targetPolygonIndex?: number | null,
   polygons?: CommonModule.Polygon[],
@@ -51,6 +52,8 @@ interface IProps {
   isReCalcBoundingBox: boolean,
   isDrawingSpeechBubble: boolean,
   isResetBoundingBox: boolean,
+  isHideEditor: boolean,
+  isResizing: boolean,
 }
 interface IEmits {
   (e: 'update:targetPolygonIndex', value: number | null): void
@@ -59,17 +62,18 @@ interface IEmits {
   (e: 'update:isDrawingSpeechBubble', value: boolean): void
   (e: 'update:isResetBoundingBox', value: boolean): void
   (e: 'update:boundingBox', value: CommonModule.BoundingBox): void
+  (e: 'update:isResizing', value: boolean): void
 }
 const emits = defineEmits<IEmits>()
 const props = defineProps<IProps>()
 const targetPolygonIndex = useVModel(props, 'targetPolygonIndex', emits)
 const isResetBoundingBox = useVModel(props, 'isResetBoundingBox', emits)
-const polygons = useVModel(props, 'polygons', emits)
 const polygon = useVModel(props, 'polygon', emits)
+const isResizing = useVModel(props, 'isResizing', emits)
 
-const r = 4;
-const a = 8;
-const b = 8;
+const r = 3;
+const a = 6;
+const b = 6;
 
 const handlerIndex = ref<number | null>();
 
@@ -90,7 +94,6 @@ const fixedPolygonPosition = ref({
   spaceX: 0,
   spaceY: 0,
 });
-const movementLimit = ref<CommonModule.MovementLimit>()
 /*
  * Hooks */
 onMounted(() => {
@@ -110,10 +113,11 @@ const handleMouseUp = () => {
 const handleMouseDownBoundingBox = (event: MouseEvent, handlerId: number) => {
   if (!props.onSelectionTool) return;
   handlerIndex.value = handlerId;
-  mouseDownEvent.value = setTimeout(() => {
+  mouseDownEvent.value = _delay(() => {
     isMousePress.value = true;
+    isResizing.value = true
     document.addEventListener("mousemove", resizeBoundingBox);
-  }, 150);
+  }, 150, 'later');
 };
 
 /* Drawing
@@ -121,7 +125,7 @@ const handleMouseDownBoundingBox = (event: MouseEvent, handlerId: number) => {
 const createBoundingBox = () => {
   let points: CommonModule.MinMax[] = [];
   boundingBox.value.handlers = [];
-  polygon.value.segments.forEach((segment) => {
+  _forEach(polygon.value.segments, (segment) => {
     points.push(bezierMinMax(
             segment.start.x,
             segment.start.y,
@@ -306,7 +310,7 @@ const resizeBoundingBox = (e: any) => {
 };
 const resizePolygon = () => {
   let points: CommonModule.MinMax[] = [];
-  polygon.value.segments.forEach((segment) => {
+  _forEach(polygon.value.segments, (segment) => {
     points.push(
         bezierMinMax(
             segment.start.x,
@@ -416,11 +420,9 @@ const updateSegments = (node: CommonModule.Point, nodeIndex: number, fixedNodes:
   const numberController = nodes[nodeIndex].lines.length
 
   if (numberController) {
-    const isLeftToRight = newPosition.x > nodes[nodeIndex].rect.x;
-    const isTopToBottom = newPosition.y > nodes[nodeIndex].rect.y;
     const space = {
-      x: Math.abs(fixedNodes[nodeIndex].rect.x - newPosition.x),
-      y: Math.abs(fixedNodes[nodeIndex].rect.y - newPosition.y),
+      x: fixedNodes[nodeIndex].rect.x - newPosition.x,
+      y: fixedNodes[nodeIndex].rect.y - newPosition.y,
     };
 
     for (let i = 0; i < numberController; i++) {
@@ -429,10 +431,8 @@ const updateSegments = (node: CommonModule.Point, nodeIndex: number, fixedNodes:
     }
 
     for (let i = 0; i < numberController; i++) {
-      if (isLeftToRight) nodes[nodeIndex].circles[i].x += space.x;
-      else nodes[nodeIndex].circles[i].x -= space.x;
-      if (isTopToBottom) nodes[nodeIndex].circles[i].y += space.y;
-      else nodes[nodeIndex].circles[i].y -= space.y;
+      nodes[nodeIndex].circles[i].x += space.x;
+      nodes[nodeIndex].circles[i].y += space.y;
     }
 
     for (let i = 0; i < numberController; i++) {
@@ -478,7 +478,7 @@ const updateSegments = (node: CommonModule.Point, nodeIndex: number, fixedNodes:
 };
 
 const drawSpeechBubble = () => {
-  if (targetPolygonIndex.value === -1) return;
+  if (targetPolygonIndex.value === -1 || !props.onDrawSpeechBubble) return;
   // Move polygon to new position
   const virtualRectangleElement: HTMLElement = document.getElementById('virtualRectangle')
   const workspace: HTMLElement = document.getElementById('workspace')
@@ -533,7 +533,7 @@ const updateNewPosition = () => {
   isMoveAPolygon.value = false;
   fixedPolygonPosition.value.x = 0;
   fixedPolygonPosition.value.y = 0;
-  polygon.value.nodes.forEach((node) => {
+  _forEach(polygon.value.nodes, (node) => {
     node.rect.x += fixedPolygonPosition.value.spaceX;
     node.rect.y += fixedPolygonPosition.value.spaceY;
     if (node.lines.length && node.circles.length) {
@@ -548,7 +548,7 @@ const updateNewPosition = () => {
     }
   });
 
-  polygon.value.segments.forEach((s, i) => {
+  _forEach(polygon.value.segments, (s, i) => {
     if (i === polygon.value.segments?.length - 1) {
       s.start.x += fixedPolygonPosition.value.spaceX;
       s.start.y += fixedPolygonPosition.value.spaceY;
@@ -593,7 +593,7 @@ const updateNewPosition = () => {
   fixedPolygonPosition.value.spaceX = 0;
   fixedPolygonPosition.value.spaceY = 0;
 
-  polygon.value.nodes.forEach((node) => {
+  _forEach(polygon.value.nodes, (node) => {
     if (!node.lines || !node.lines[0]) return;
     if (node.rect.x !== node.lines[0].x1) node.rect.x = node.lines[0].x1;
     if (node.rect.y !== node.lines[0].y1) node.rect.y = node.lines[0].y1;

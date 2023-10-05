@@ -1,13 +1,19 @@
 <template>
   <div class="bezier-container">
     <div ref="imgContainerElement" class="workspace">
+      <!--START BEZIER GRID-->
+      <bezier-grid></bezier-grid>
+      <!--END BEZIER GRID-->
+
       <!--START BEZIER PANEL-->
       <bezier-panel
           v-model:onPenTool="onPenTool"
           v-model:onDirectSelectionTool="onDirectSelectionTool"
           v-model:onSelectionTool="onSelectionTool"
           v-model:onDrawSpeechBubble="onDrawSpeechBubble"
+          v-model:onFillTool="onFillTool"
           v-model:isSelectedBubbleType="isSelectedBubbleType"
+          :polygon="polygons[targetPolygonIndex]"
           @update:targetPolygonIndex="(newVal) => targetPolygonIndex = newVal"
           :isDrawing="isDrawing"
       />
@@ -29,6 +35,8 @@
                         :polygons="polygons"
                         v-model:targetPolygonIndex="targetPolygonIndex"
                         v-model:polygon="polygons[targetPolygonIndex]"
+                        v-model:isStageMove="isStageMove"
+                        v-model:targetPoint="targetPoint"
                         :isDrawingSpeechBubble="isDrawingSpeechBubble"
                         :isStageEnded="isStageEnded"
                         v-model:isResetBoundingBox="isResetBoundingBox"
@@ -46,10 +54,13 @@
   </div>
 </template>
 <script lang="ts" setup>
-import {BUBBLE_TEMPLATES, KEY_BOARD} from "~/lib/utils/contants";
+import {BUBBLE_TEMPLATES, FILL_TYPES, GRADIENT_DEFAULT, GRADIENT_TYPE, KEY_BOARD} from "~/lib/utils/contants";
 import BezierPanel from "~/pages/app/Bezier/Panel.vue";
 import BezierPolygon from "~/pages/app/Bezier/Polygon.vue";
+import BezierGrid from "~/pages/app/Bezier/Grid.vue"
 import {useKeyModifier} from "@vueuse/core";
+import {CommonModule} from "~/lib/types/common";
+import {StorageService} from "~/lib/utils/StorageService";
 
 const route = useRoute();
 
@@ -57,7 +68,7 @@ const workspace = ref<HTMLElement>();
 const polygons = ref<CommonModule.Polygon[]>([]);
 
 const targetPoint = ref(0);
-const targetPolygonIndex = ref(0);
+const targetPolygonIndex = ref<number>(0);
 const handlerIndex = ref<number | null>();
 
 const isStageStarted = ref<boolean>(false);
@@ -72,11 +83,12 @@ const onDirectSelectionTool = ref<boolean>(false);
 const onSelectionTool = ref<boolean>(false);
 const onPenTool = ref<boolean>(false);
 const onDrawSpeechBubble = ref<boolean>(false);
+const onFillTool = ref<boolean>(false);
 
 const imgContainerElement: Ref<HTMLElement | undefined> = ref()
 const virtualRectangleElement: Ref<HTMLElement | undefined> = ref()
 const movementLimit = ref<CommonModule.MovementLimit>()
-const isSelectedBubbleType = ref<String>()
+const isSelectedBubbleType = ref<CommonModule.SelectedBubbleType>()
 const virtualRectangle = ref<CommonModule.VirtualRectangle>({
   top: 0,
   left: 0,
@@ -120,7 +132,7 @@ const mouseDown = (event: MouseEvent) => {
   targetPolygonIndex.value = -1
 
   document.addEventListener('mouseup', mouseUp)
-  mouseDownEvent.value = setTimeout(() => {
+  mouseDownEvent.value = _delay(() => {
     isMousePress.value = true
     virtualRectangle.value.top = event.clientY
     virtualRectangle.value.left = event.clientX
@@ -129,7 +141,7 @@ const mouseDown = (event: MouseEvent) => {
     virtualRectangleElement.value.style.left = virtualRectangle.value.left + 'px'
     virtualRectangleElement.value.style.opacity = '1'
     document.addEventListener('mousemove', mouseMove)
-  }, 150)
+  }, 150, 'later')
 }
 const mouseMove = (event: MouseEvent) => {
   event.stopPropagation();
@@ -165,8 +177,9 @@ const mouseUp = (event: MouseEvent) => {
 
   isDrawingSpeechBubble.value = true
   targetPolygonIndex.value = polygons.value.length;
-  const bubbleTemplates = JSON.parse(JSON.stringify(BUBBLE_TEMPLATES))
-  if (isSelectedBubbleType.value) polygons.value.push(bubbleTemplates[isSelectedBubbleType.value.toString()])
+  let bubbleTemplates = JSON.parse(JSON.stringify(BUBBLE_TEMPLATES))
+  if (isSelectedBubbleType.value && isSelectedBubbleType.value.isManual) bubbleTemplates = _concat([], StorageService.get('bubbleTemplates'))
+  if (isSelectedBubbleType.value) polygons.value.push(bubbleTemplates[isSelectedBubbleType.value.type])
   if (virtualRectangleElement.value) virtualRectangleElement.value.style.opacity = '0'
   isStageEnded.value[targetPolygonIndex.value] = true
   createNewPolygon.value = true
@@ -183,14 +196,15 @@ const handleMouseUp = () => {
 const handleMouseDown = (event: MouseEvent) => {
   if (!onPenTool.value) return;
   if (!isStageEnded.value[targetPolygonIndex.value] || !onDirectSelectionTool.value) stageStarted(event);
-  mouseDownEvent.value = setTimeout(() => {
+  mouseDownEvent.value = _delay(() => {
     isMousePress.value = true;
     document.addEventListener("mousemove", curveStarted);
-  }, 150);
+  }, 150, 'later');
 };
 /* Drawing
 * */
 const stageStarted = (e: MouseEvent, isEnd?: boolean) => {
+  if (onFillTool.value) return;
   isStageStarted.value = true;
   isDrawing.value = true
   const el = e.target as HTMLElement
@@ -220,6 +234,23 @@ const stageStarted = (e: MouseEvent, isEnd?: boolean) => {
     polygons.value.push({
       nodes: [firstNode],
       segments: [],
+      path: '',
+      colors: {
+        fill: {
+          style: FILL_TYPES.DEFAULT,
+          isGradient: false,
+          type: GRADIENT_DEFAULT.type,
+          degree: GRADIENT_DEFAULT.degree,
+          points: GRADIENT_DEFAULT.points
+        },
+        stroke: {
+          style: FILL_TYPES.DEFAULT,
+          isGradient: false,
+          type: GRADIENT_DEFAULT.type,
+          degree: GRADIENT_DEFAULT.degree,
+          points: GRADIENT_DEFAULT.points
+        }
+      }
     });
     targetPoint.value = 0;
     createNewPolygon.value = false;
@@ -227,6 +258,7 @@ const stageStarted = (e: MouseEvent, isEnd?: boolean) => {
     createNewPolygon.value = true;
     nodes.splice(-2)
     segments.splice(-2)
+    targetPoint.value = 0
     const fixedNodes = JSON.parse(JSON.stringify(nodes))
     segments.push({
       start: fixedNodes[fixedNodes.length - 1].rect,
@@ -374,7 +406,7 @@ const preventMouseOut = () => {
       document.addEventListener('mouseup', handleMouseUpOutsideWindow)
       const targetNode = document.getElementById(`anchorPoint-${targetPolygonIndex.value}-${targetPoint.value}`)
       if (!targetNode) return
-      targetNode.childNodes.forEach((node: any) => {
+      _forEach(targetNode.childNodes, (node: any) => {
         if (node.tagName === 'line' || node.tagName === 'circle') node.style.opacity = '0'
       })
     }
@@ -388,7 +420,7 @@ const preventMouseOver = () => {
     if (pathAbsolute) pathAbsolute.style.opacity = '1'
     const targetNode = document.getElementById(`anchorPoint-${targetPolygonIndex.value}-${targetPoint.value}`)
     if (!targetNode) return
-    targetNode.childNodes.forEach((node: any) => {
+    _forEach(targetNode.childNodes, (node: any) => {
       if (node.tagName === 'line' || node.tagName === 'circle') node.style.opacity = '1'
     })
   })
@@ -429,7 +461,7 @@ const undo = () => {
     polygons.value.pop();
     createNewPolygon.value = true
     isDrawing.value = false
-  }
+  }undo
 };
 const checkUndoWithKeyBoard = () => {
   const userAgent = window.navigator.userAgent;
@@ -452,7 +484,7 @@ const checkUndoWithKeyBoard = () => {
 };
 
 const deletePolygon = () => {
-  if (!polygons.value.length || !polygons.value[targetPolygonIndex.value]) return;
+  if (!polygons.value.length || !polygons.value[targetPolygonIndex.value] || onFillTool.value) return;
   polygons.value.splice(targetPolygonIndex.value, 1);
   isStageEnded.value.splice(targetPolygonIndex.value, 1);
   isStageStarted.value = true;
@@ -471,7 +503,7 @@ watch(isAlt, (val) => {
 watch(isStageStarted, (val) => {
   if (val) {
     document.addEventListener("dblclick", ($event) => {
-      if (!onPenTool.value || polygons.value[targetPolygonIndex.value].nodes.length <= 1) return
+      if (!onPenTool.value || polygons.value[targetPolygonIndex.value].nodes.length <= 1 || onFillTool.value) return
       isStageEnded.value[targetPolygonIndex.value] = true;
       stageStarted($event, true);
     });
@@ -493,6 +525,23 @@ watch(onPenTool, (val) => {
     document.removeEventListener("mousemove", stageMoved)
   }
 });
+watch(onFillTool, (val) => {
+  if (!imgContainerElement.value) return
+  if (val) {
+    imgContainerElement.value.classList.remove("stageStarted");
+  } else if (onPenTool.value) {
+    imgContainerElement.value.classList.add("stageStarted");
+  }
+})
+watch(onDrawSpeechBubble, (val) => {
+  if (!imgContainerElement.value) return
+  if (val) {
+    imgContainerElement.value.classList.add("drawSpeech");
+  } else {
+    imgContainerElement.value.classList.remove("drawSpeech");
+
+  }
+})
 watch(
     () => route.query,
     () => {

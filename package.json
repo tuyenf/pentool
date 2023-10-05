@@ -23,6 +23,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "nuxt": "^3.6.5",
+    "nuxt-lodash": "^2.5.0",
     "postcss": "^8.4.27",
     "prettier": "^3.0.1",
     "tailwindcss": "^3.3.3",
@@ -31,7 +32,10 @@
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.8.0",
     "@webtoon/psd": "^0.4.0",
-    "sass": "^1.64.2"
+    "color-gradient-picker-vue3": "^1.1.2",
+    "moment": "^2.29.4",
+    "sass": "^1.64.2",
+    "vue-accessible-color-picker": "^4.1.4"
   },
   "description": "Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.",
   "version": "1.0.0",

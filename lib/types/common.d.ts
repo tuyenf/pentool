@@ -1,3 +1,5 @@
+import {b} from "vite-node/types-516036fa";
+
 declare namespace CommonModule {
   interface Point {
     x: number;
@@ -31,11 +33,25 @@ declare namespace CommonModule {
     end: Point;
   }
   interface Polygon {
+    path: string;
     segments: Segment[];
     nodes: Node[];
     pathAbsolute?: Segment;
     coordinates?: string;
-    isFilled?: boolean;
+    colors: ColorItem
+  }
+
+  interface Color {
+    isGradient: boolean,
+    points?: IPoitItem[];
+    type?:   string;
+    degree?: number;
+    style:  string;
+  }
+
+  interface ColorItem {
+    fill: Color,
+    stroke: Color
   }
 
   interface BoundingBox {
@@ -60,6 +76,8 @@ declare namespace CommonModule {
   }
 
   interface BubbleType {
+    nodes: Node[],
+    segments: Segment[],
     name: string;
   }
 
@@ -80,5 +98,38 @@ declare namespace CommonModule {
     maxX: number,
     minY: number
     maxY: number
+  }
+  interface SelectedBubbleType {
+    type: number,
+    isManual: boolean
+  }
+  interface ColorPickerResponse {
+    hex: string
+    hsv: {
+      a: number
+      h: number
+      s: number
+      v: number
+    }
+  }
+  interface RecentColor {
+    degree?: number;
+    points?: [IPoitItem];
+    style?: string;
+    type?: string;
+    isBackground?: boolean,
+  }
+
+  interface IPoitItem {
+    left:  number;
+    red:   number;
+    green: number;
+    blue:  number;
+    alpha: number;
+  }
+
+  interface SelectedColor {
+    color: string;
+    isGradient: boolean
   }
 }

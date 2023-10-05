@@ -3,9 +3,59 @@ export const enum KEY_BOARD {
   DELETE = "Delete",
   ALT = "Alt",
 }
-export const BUBBLE_TYPES = ["Bubble 1", "Bubble 2", "Bubble 3", "Bubble 4"];
-export const BUBBLE_TEMPLATES = {
-  "Bubble 1": {
+export const COLOR_TYPES = {
+  DEFAULT: 'default',
+  COLORS: 'colors',
+  PICKER: 'picker',
+}
+
+export const FILL_TYPES = {
+  COLOR: 'color',
+  GRADIENT: 'gradient',
+  DEFAULT: 'none',
+}
+export const GRADIENT_DEFAULT = {
+  points: [
+    {
+      "left": 0,
+      "red": 0,
+      "green": 0,
+      "blue": 0,
+      "alpha": 1
+    },
+    {
+      "left": 0,
+      "red": 0,
+      "green": 0,
+      "blue": 0,
+      "alpha": 1
+    },
+    {
+      "left": 100,
+      "red": 0,
+      "green": 0,
+      "blue": 0,
+      "alpha": 0
+    },
+    {
+      "left": 100,
+      "red": 0,
+      "green": 0,
+      "blue": 0,
+      "alpha": 1
+    }
+  ],
+  type: "linear",
+  degree: 90,
+  style: "linear-gradient(90deg,rgba(0, 0, 0, 1) 0%,rgba(0, 0, 0, 1) 0%,rgba(0, 0, 0, 0) 100%,rgba(0, 0, 0, 1) 100%)"
+}
+
+export const GRADIENT_TYPE = {
+  LINEAR: 'linear',
+  RADIAL: 'radial'
+}
+export const BUBBLE_TEMPLATES = [
+  {
     nodes: [
       {
         rect: {
@@ -122,8 +172,25 @@ export const BUBBLE_TEMPLATES = {
         },
       },
     ],
+    name: "Bubble 1",
+    colors: {
+      fill: {
+        style: '#ffffff40',
+        isGradient: false,
+        type: GRADIENT_DEFAULT.type,
+        degree: GRADIENT_DEFAULT.degree,
+        points: GRADIENT_DEFAULT.points
+      },
+      stroke: {
+        style: '#4e7fff',
+        isGradient: false,
+        type: GRADIENT_DEFAULT.type,
+        degree: GRADIENT_DEFAULT.degree,
+        points: GRADIENT_DEFAULT.points
+      }
+    }
   },
-  "Bubble 2": {
+  {
     nodes: [
       {
         "rect": {
@@ -328,8 +395,25 @@ export const BUBBLE_TEMPLATES = {
         }
       }
     ],
+    name: "Bubble 2",
+    colors: {
+      fill: {
+        style: '#ffffff40',
+        isGradient: false,
+        type: GRADIENT_DEFAULT.type,
+        degree: GRADIENT_DEFAULT.degree,
+        points: GRADIENT_DEFAULT.points
+      },
+      stroke: {
+        style: '#4e7fff',
+        isGradient: false,
+        type: GRADIENT_DEFAULT.type,
+        degree: GRADIENT_DEFAULT.degree,
+        points: GRADIENT_DEFAULT.points
+      }
+    }
   },
-  "Bubble 3": {
+  {
     nodes: [
       {
         "rect": {
@@ -684,8 +768,25 @@ export const BUBBLE_TEMPLATES = {
         }
       }
     ],
+    name: "Bubble 3",
+    colors: {
+      fill: {
+        style: '#ffffff40',
+        isGradient: false,
+        type: GRADIENT_DEFAULT.type,
+        degree: GRADIENT_DEFAULT.degree,
+        points: GRADIENT_DEFAULT.points
+      },
+      stroke: {
+        style: '#4e7fff',
+        isGradient: false,
+        type: GRADIENT_DEFAULT.type,
+        degree: GRADIENT_DEFAULT.degree,
+        points: GRADIENT_DEFAULT.points
+      }
+    }
   },
-  "Bubble 4": {
+  {
     nodes: [
       {
         "rect": {
@@ -1018,5 +1119,22 @@ export const BUBBLE_TEMPLATES = {
         }
       }
     ],
+    name: "Bubble 3",
+    colors: {
+      fill: {
+        style: '#ffffff40',
+        isGradient: false,
+        type: GRADIENT_DEFAULT.type,
+        degree: GRADIENT_DEFAULT.degree,
+        points: GRADIENT_DEFAULT.points
+      },
+      stroke: {
+        style: '#4e7fff',
+        isGradient: false,
+        type: GRADIENT_DEFAULT.type,
+        degree: GRADIENT_DEFAULT.degree,
+        points: GRADIENT_DEFAULT.points
+      }
+    }
   }
-}
+]
