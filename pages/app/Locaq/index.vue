@@ -25,7 +25,7 @@
     </div>
     <h1 class="tw-font-semibold tw-text-lg tw-mb-4 tw-mt-5">2. Buttons</h1>
     <h3 class="tw-font-semibold tw-text-md">Types:</h3>
-    <div class="tw-flex tw-items-end">
+    <div class="tw-flex tw-items-end tw-mt-2">
       <the-button
           :shape="'tw-rounded-[5px]'"
           :text="'Primary'"
