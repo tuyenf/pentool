@@ -1,5 +1,5 @@
 <template>
-  <div class="i-multiple-select" ref="multipleSelect">
+  <div :id="id" class="i-multiple-select" ref="multipleSelect">
     <div class="i-multiple-select-btn"
          :class="{isDisable: isDisable}">
       <div class="i-multiple-select-content">
@@ -35,16 +35,16 @@
           <label v-for="(option, i) in displayOptions"
                  :key="i"
                  :class="{isDisabled: option.isDisabled}"
-                 :for="`option-${i}`"
+                 :for="`option-${id}-${i}`"
                  class="option-item"
           >
-            <input :id="`option-${i}`"
+            <input :id="`option-${id}-${i}`"
                    type="checkbox"
                    class="tw-mr-1"
                    :class="{'tw-absolute tw-opacity-0': !isShowCheckBox}"
                    @click="updateSelectedOptions($event, option)"
                    :disabled="option.isDisabled">
-            <span class="tw-block">{{ option.text ?? '---'}}</span>
+            <span class="option-item-text tw-block">{{ option.text ?? '---'}}</span>
           </label>
         </template>
         <div v-else class="tw-py-1.5 tw-px-2.5 tw-text-sm">
@@ -57,6 +57,8 @@
 <script lang="ts" setup>
 import {onClickOutside} from "@vueuse/core";
 import {filteredOptions} from "~/utils/global";
+import {marked} from "marked";
+
 interface Option {
   text?: string,
   code?: number,
@@ -68,7 +70,8 @@ interface IProps {
   selectedOptions?: Option[],
   isDisable?: boolean,
   placeholder?: string,
-  isShowCheckBox?: boolean
+  isShowCheckBox?: boolean,
+  id?: string
 }
 interface IEmits {
   (e: "update:selectedOptions", value: Option[]): void;
@@ -101,7 +104,7 @@ const selectOption = (option: Option) => {
 
 const unSelectOption = (option: Option) => {
   const delIndex = props.options?.findIndex((opt) => opt.code === option.code )
-  const optionInput = document.getElementById(`option-${delIndex}`)
+  const optionInput = document.getElementById(`option-${props.id}-${delIndex}`)
   if (!optionInput) return
   optionInput.checked = false
   selectedOptions.value = selectedOptions.value.filter((e)=>{

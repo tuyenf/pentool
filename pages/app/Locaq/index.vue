@@ -5,14 +5,19 @@
       <h4 class="tw-mt-2"># Show checkbox</h4>
       <the-multiple-select
           :options="tags"
-          v-model:selected-options="selectedOptions"
+          :selected-options="selectedOptions"
+          @update:selected-options="(newVal) => selectedOptions = newVal"
+          :id="'select1'"
           :is-show-check-box="true"
       >
       </the-multiple-select>
       <h4 class="tw-mt-2"># Hide checkbox</h4>
       <the-multiple-select
           :options="tags"
-          v-model:selected-options="selectedOptions"
+          :id="'select2'"
+          :is-show-check-box="true"
+          :selected-options="selectedOptions2"
+          @update:selected-options="(newVal) => selectedOptions2 = newVal"
       >
       </the-multiple-select>
       <h4 class="tw-mt-2"># Disable</h4>
@@ -548,6 +553,7 @@ const tags = ref<Option[]>([
   }
 ])
 const selectedOptions = ref<Option[]>([])
+const selectedOptions2 = ref<Option[]>([])
 const defaultSelectedOptions = ref<Option[]>([
   {
     text: 'License',

@@ -5235,6 +5235,11 @@
     "socks-proxy-agent" "^7.0.0"
     "ssri" "^10.0.0"
 
+"marked@^9.1.0":
+  "integrity" "sha512-VZjm0PM5DMv7WodqOUps3g6Q7dmxs9YGiFUZ7a2majzQTTCgX+6S6NAJHPvOhgFBzYz8s4QZKWWMfZKFmsfOgA=="
+  "resolved" "https://registry.npmjs.org/marked/-/marked-9.1.0.tgz"
+  "version" "9.1.0"
+
 "mdn-data@2.0.28":
   "integrity" "sha512-aylIc7Z9y4yzHYAJNuESG3hfhC+0Ibp/MAMiaOZgNv4pmEdFyfZhhhny4MNiAfWdBQ1RQ2mfDWmM1x8SvGyp8g=="
   "resolved" "https://registry.npmjs.org/mdn-data/-/mdn-data-2.0.28.tgz"

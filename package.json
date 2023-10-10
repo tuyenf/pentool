@@ -34,6 +34,7 @@
     "@vuepic/vue-datepicker": "^7.1.0",
     "@webtoon/psd": "^0.4.0",
     "color-gradient-picker-vue3": "^1.1.2",
+    "marked": "^9.1.0",
     "moment": "^2.29.4",
     "sass": "^1.64.2",
     "vue-accessible-color-picker": "^4.1.4"
