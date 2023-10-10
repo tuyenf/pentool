@@ -1,6 +1,6 @@
 <template>
   <div class="loading-block" :style="{'min-height': min + 'px'}">
-    <div class="lds-spinner" :class="{'spinner-orange': color == 'orange', 'spinner-dark': color == 'dark'}">
+    <div class="lds-spinner" :class="[`spinner-${color}`]">
       <div></div>
       <div></div>
       <div></div>
@@ -18,7 +18,13 @@
 </template>
 <script lang="ts" setup name="TheLoading">
 import { defineProps } from 'vue'
-const props = defineProps(['color', 'min'])
+interface IProps {
+  color?: string,
+  min?: number
+}
+const props = withDefaults(defineProps<IProps>(), {
+  color: 'primary', // 'secondary'
+})
 </script>
 
 <style lang="scss">
@@ -43,12 +49,12 @@ const props = defineProps(['color', 'min'])
   position: relative;
   left: -40px;
   top: -20px;
-  &.spinner-orange {
+  &.spinner-primary {
     div:after {
       background-color: #FB973B;
     }
   }
-  &.spinner-dark {
+  &.spinner-secondary {
     div:after {
       background-color: #282626;
     }

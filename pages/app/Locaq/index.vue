@@ -473,10 +473,10 @@
     <h4 class="tw-mt-2"># Loading Block</h4>
     <div class="tw-flex">
       <div class="tw-w-[200px]">
-        <the-loading :min="200" :color="'orange'"></the-loading>
+        <the-loading :min="200"></the-loading>
       </div>
       <div class="tw-w-[200px]">
-        <the-loading :min="200" :color="'dark'"></the-loading>
+        <the-loading :min="200" :color="'secondary'"></the-loading>
       </div>
     </div>
     <h4 class="tw-mt-2 tw-mb-2"># Loading Screen</h4>

@@ -110,9 +110,7 @@ const unSelectOption = (option: Option) => {
 }
 
 const searchOptions = () => {
-
   let data: Option[] = [...props.options]
-
   if (searchKey.value) {
     const options = data.map(item => {
       return {
