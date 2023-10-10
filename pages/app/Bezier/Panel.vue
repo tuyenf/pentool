@@ -29,7 +29,7 @@
       :class="{ isActive: onPenTool, 'notClick': isDrawing }"
       @click="changeTool('onPenTool')"
     >
-      <img src="~/assets/images/pen-tool.png" alt="" />
+     p
       <div class="bezier-tool__name">Pen Tool</div>
     </div>
     <div
@@ -213,6 +213,7 @@ const color = ref({
 })
 const onChange = (attrs: any) => {
   recentGradientColor.value = {...attrs}
+  console.log(recentGradientColor.value)
   if (isFill.value) {
     selectedBackgroundColor.value = Object.assign({}, recentGradientColor.value, {
       isGradient: true

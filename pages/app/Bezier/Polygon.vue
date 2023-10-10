@@ -11,10 +11,8 @@
   >
     <defs>
       <template v-if="polygon.colors.fill.type === GRADIENT_TYPE.LINEAR">
-        <linearGradient  v-for="(segment, index) in polygon.segments"
-                         :key="index"
-                         :id="`background-${index}`"
-                         :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
+        <linearGradient  :id="`background-${i}`"
+                         :x1="getPosition(polygon, 'x1')" :y1="getPosition(polygon, 'y1')" :x2="getPosition(polygon, 'x2')" :y2="getPosition(polygon, 'y2')"
                          gradientUnits="userSpaceOnUse"
                          class="gradient">
           <stop v-for="(color, idx) in polygon.colors.fill.points"
@@ -25,11 +23,9 @@
         </linearGradient>
       </template>
       <template v-else>
-        <radialGradient  v-for="(segment, index) in polygon.segments"
-                         :key="index"
-                         :id="`background-${index}`"
-                         :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
-                         gradientUnits="userSpaceOnUse"
+        <radialGradient cx="50%" cy="50%" r="100%" fx="50%" fy="50%"
+                         :id="`background-${i}`"
+                        gradientUnits="percentage"
                          class="gradient">
           <stop v-for="(color, idx) in polygon.colors.fill.points"
                 :key="idx"
@@ -39,10 +35,9 @@
         </radialGradient>
       </template>
       <template v-if="polygon.colors.stroke.type === GRADIENT_TYPE.LINEAR">
-        <linearGradient  v-for="(segment, index) in polygon.segments"
-                         :key="index"
-                         :id="`stroke-${index}`"
-                         :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
+        <linearGradient  :id="`stroke-${i}`"
+                         :x1="getPosition(polygon, 'x1')" :y1="getPosition(polygon, 'y1')" :x2="getPosition(polygon, 'x2')" :y2="getPosition(polygon, 'y2')"
+                         :gradientTransform="`rotate(${polygon.colors.stroke.degree})`"
                          gradientUnits="userSpaceOnUse"
                          class="gradient">
           <stop v-for="(color, idx) in polygon.colors.stroke.points"
@@ -53,11 +48,9 @@
         </linearGradient>
       </template>
       <template v-else>
-        <radialGradient  v-for="(segment, index) in polygon.segments"
-                         :key="index"
-                         :id="`stroke-${index}`"
-                         :x1="segment.start.x" :y1="segment.start.y" :x2="segment.end.x" :y2="segment.end.y"
-                         gradientUnits="userSpaceOnUse"
+        <radialGradient  cx="50%" cy="50%" r="100%" fx="50%" fy="50%"
+                         :id="`stroke-${i}`"
+                         gradientUnits="percentage"
                          class="gradient">
           <stop v-for="(color, idx) in polygon.colors.stroke.points"
                 :key="idx"
@@ -177,7 +170,8 @@
 import BezierBoundingBox from "~/pages/app/Bezier/BoundingBox.vue"
 import {onClickOutside, useKeyModifier} from "@vueuse/core";
 import {GRADIENT_TYPE, KEY_BOARD} from "~/lib/utils/contants";
-import {getMinMaxValue} from "~/lib/utils/global";
+import {bezierMinMax, getMinMaxValue} from "~/lib/utils/global";
+import {CommonModule} from "~/lib/types/common";
 
 interface IProps {
   polygons: CommonModule.Polygon[],
@@ -266,6 +260,32 @@ onUpdated(() => {
     })
   })
 })
+const getPosition = (polygon: CommonModule.Polygon, axis?: string = 'x1') => {
+  let points: CommonModule.MinMax[] = [];
+  _forEach(polygon.segments, (segment) => {
+    points.push(bezierMinMax(
+            segment.start.x,
+            segment.start.y,
+            segment.controlPoint1.x,
+            segment.controlPoint1.y,
+            segment.controlPoint2.x,
+            segment.controlPoint2.y,
+            segment.end.x,
+            segment.end.y,
+        ),
+    );
+  });
+
+  if (axis === 'y1') {
+    return getMinMaxValue(points, true, "min", "y");
+  } else if (axis === 'x2') {
+    return getMinMaxValue(points, false, "max", "x");
+  } else if (axis === 'y2') {
+    return getMinMaxValue(points, false, "max", "y");
+  } else {
+    return getMinMaxValue(points, true, "min", "x");
+  }
+}
 const checkIsShowEditor = (id: number, i: number, isRect?: boolean = false, index?: number) => {
   let targetRect = targetPoint.value
   if (tempActiveRect.value >= 0) targetRect = tempActiveRect.value
