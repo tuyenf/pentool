@@ -463,7 +463,7 @@
       <template #input-icon>
         <img
             class="dp__icon dp__input_icon dp__input_icons"
-            src="~/assets/v2/icon/calendar.svg"
+            src="~/assets/images/calendar.svg"
             alt="date-picker-icon"
         />
       </template>
@@ -576,6 +576,12 @@ button + button {
   width: 261px;
   .dp__input_icon_pad {
     padding: 6px 10px;
+    background-color: #1a202c;
+  }
+  .dp__input_icon {
+    width: 20px;
+    height: 20px;
+    left: 75%;
   }
 }
 </style>
