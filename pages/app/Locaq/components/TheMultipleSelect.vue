@@ -4,7 +4,7 @@
          :class="{isDisable: isDisable}">
       <div class="i-multiple-select-content">
         <ul v-if="selectedOptions.length" class="selected-option-list">
-          <li  v-for="(option, i) in selectedOptions.slice(0, 4)"
+          <li  v-for="(option, i) in selectedOptions.slice(0, 3)"
                :key="i"
                class="selected-option-item"
           >
@@ -15,9 +15,9 @@
                  src="~assets/images/del.png" alt="Delete">
           </li>
         </ul>
-        <span v-if="selectedOptions.length >=5" class="tw-text-sm">and {{selectedOptions.length - 4}} more</span>
+        <span v-if="selectedOptions.length >=4" class="tw-text-sm">and {{selectedOptions.length - 3}} more</span>
         <input class="i-multiple-select-input"
-               :class="{'tw-py-1.5': selectedOptions.length >=5}"
+               :class="{'tw-py-1.5': selectedOptions.length >=4}"
                @focus="isShow = true"
                v-model.trim="searchKey"
                @input="searchOptions"
