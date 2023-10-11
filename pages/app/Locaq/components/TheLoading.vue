@@ -46,9 +46,10 @@ const props = withDefaults(defineProps<IProps>(), {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  left: -40px;
-  top: -20px;
+  position: absolute;
+  top: 30%;
+  left: 30%;
+  transform: translate(-50%, -50%);
   &.spinner-primary {
     div:after {
       background-color: #FB973B;
