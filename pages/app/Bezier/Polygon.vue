@@ -25,7 +25,6 @@
       <template v-else>
         <radialGradient cx="50%" cy="50%" r="100%" fx="50%" fy="50%"
                          :id="`background-${i}`"
-                        gradientUnits="percentage"
                          class="gradient">
           <stop v-for="(color, idx) in polygon.colors.fill.points"
                 :key="idx"
@@ -50,7 +49,6 @@
       <template v-else>
         <radialGradient  cx="50%" cy="50%" r="100%" fx="50%" fy="50%"
                          :id="`stroke-${i}`"
-                         gradientUnits="percentage"
                          class="gradient">
           <stop v-for="(color, idx) in polygon.colors.stroke.points"
                 :key="idx"

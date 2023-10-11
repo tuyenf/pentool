@@ -50,7 +50,9 @@
         </div>
       </div>
     </div>
-    <div id="virtualRectangle" ref="virtualRectangleElement"></div>
+    <div id="virtualRectangle"
+         :style="{zIndex: onDrawSpeechBubble ? 1 : -1}"
+         ref="virtualRectangleElement"></div>
   </div>
 </template>
 <script lang="ts" setup>
