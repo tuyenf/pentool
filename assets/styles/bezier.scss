@@ -2,14 +2,16 @@
   --z13: #373d48;
   --bg: #1a202c;
   --panel-width: 60px;
-  //--background: #1A202C;
-  --background: #f5f5f5;
+  --background: #1A202C;
 }
 body {
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
+}
+.bezier-container {
   background-color: var(--background);
 }
+
 img {
   object-fit: contain;
 }

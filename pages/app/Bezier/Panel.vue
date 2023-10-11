@@ -29,7 +29,7 @@
       :class="{ isActive: onPenTool, 'notClick': isDrawing }"
       @click="changeTool('onPenTool')"
     >
-     p
+      <img src="~/assets/images/pen-tool.png" alt="Bulle" />
       <div class="bezier-tool__name">Pen Tool</div>
     </div>
     <div
