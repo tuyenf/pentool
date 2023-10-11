@@ -26,21 +26,23 @@
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 interface IProps {
+  timeRange?: string[]
   placeholder?: string,
   inputClassName?: string
 }
 interface IEmits {
-  (e: 'update:range', value: string[]): void
+  (e: 'update:timeRange', value: string[]): void
 }
 const props = withDefaults(defineProps<IProps>(), {
   placeholder: 'Time'
 })
 const emits = defineEmits<IEmits>()
-const range = ref<string[]>([])
+
+const range = ref(props.timeRange)
 
 watch(range, (val) => {
   if (val) {
-    emits('update:range', val)
+    emits('update:timeRange', val)
   }
 })
 </script>

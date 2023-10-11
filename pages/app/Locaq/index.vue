@@ -452,10 +452,12 @@
 
     <h1 class="tw-font-semibold tw-text-lg tw-mb-4 tw-mt-5">3. Datepicker</h1>
 
-    <date-picker @update:range="(newVal) => range= newVal">
+    <date-picker @update:range="(newVal) => range= newVal"
+                 :time-range="range">
     </date-picker>
     <date-picker :placeholder="'Recent update'"
                  :inputClassName="'tw-mt-2'"
+                 :time-range="range1"
                  @update:range="(newVal) => range1= newVal"
     >
     </date-picker>
