@@ -4,7 +4,7 @@
     <div>
       <h4 class="tw-mt-2"># Show checkbox</h4>
       <the-multiple-select
-          :options="tags"
+          v-model:options="tags"
           :selected-options="selectedOptions"
           @update:selected-options="(newVal) => selectedOptions = newVal"
           :id="'select1'"
@@ -13,7 +13,7 @@
       </the-multiple-select>
       <h4 class="tw-mt-2"># Hide checkbox</h4>
       <the-multiple-select
-          :options="tags"
+          v-model:options="tags2"
           :id="'select2'"
           :is-show-check-box="true"
           :selected-options="selectedOptions2"
@@ -22,7 +22,7 @@
       </the-multiple-select>
       <h4 class="tw-mt-2"># Disable</h4>
       <the-multiple-select
-          :options="tags"
+          v-model:options="tags"
           :is-disable="true"
           v-model:selected-options="defaultSelectedOptions"
       >
@@ -452,27 +452,13 @@
 
     <h1 class="tw-font-semibold tw-text-lg tw-mb-4 tw-mt-5">3. Datepicker</h1>
 
-    <VueDatePicker
-        v-model="range"
-        class="customDatepicker"
-        range
-        position="left"
-        :enable-time-picker="false"
-        placeholder="Choose time"
-        auto-apply
-        :hide-navigation="['month', 'year']"
-        format="yyyy/MM/dd"
-        :year-range="[1950, new Date().getFullYear()]"
-        :month-change-on-scroll="false"
+    <date-picker @update:range="(newVal) => range= newVal">
+    </date-picker>
+    <date-picker :placeholder="'Recent update'"
+                 :inputClassName="'tw-mt-2'"
+                 @update:range="(newVal) => range1= newVal"
     >
-      <template #input-icon>
-        <img
-            class="dp__icon dp__input_icon dp__input_icons"
-            src="~/assets/images/calendar.svg"
-            alt="date-picker-icon"
-        />
-      </template>
-    </VueDatePicker>
+    </date-picker>
 
     <h1 class="tw-font-semibold tw-text-lg tw-mb-4 tw-mt-5">4. Loading</h1>
     <h4 class="tw-mt-2"># Loading Block</h4>
@@ -502,12 +488,7 @@ import TheMultipleSelect from "~/pages/app/Locaq/components/TheMultipleSelect.vu
 import TheButton from "~/pages/app/Locaq/components/TheButton.vue";
 import TheLoading from "~/pages/app/Locaq/components/TheLoading.vue";
 import TheLoadingScreen from "~/pages/app/Locaq/components/TheLoadingScreen.vue";
-
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
-
-const range = ref()
-const isShow = ref<boolean>(false)
+import DatePicker from "~/pages/app/Locaq/components/DatePicker.vue";
 
 interface Option {
   text?: string,
@@ -552,8 +533,48 @@ const tags = ref<Option[]>([
     isDisabled: false
   }
 ])
+const tags2 = ref<Option[]>([
+  {
+    text: 'License',
+    code: 1,
+    isDisabled: false
+  },
+  {
+    text: 'Github Stars',
+    code: 2,
+    isDisabled: false
+  },
+  {
+    text: 'Npm Monthly Downloads',
+    code: 3,
+    isDisabled: true
+  },
+  {
+    text: 'Full Test Coverage',
+    code: 4,
+    isDisabled: false
+  },
+  {
+    text: 'NO Dependencies',
+    code: 5,
+    isDisabled: true
+  },
+  {
+    text: 'Fully configurable',
+    code: 6,
+    isDisabled: false
+  },
+  {
+    text: 'Ajax support',
+    code: 7,
+    isDisabled: false
+  }
+])
 const selectedOptions = ref<Option[]>([])
 const selectedOptions2 = ref<Option[]>([])
+const isShow = ref<boolean>(false)
+const range = ref<string[]>([])
+const range1 = ref<string[]>([])
 const defaultSelectedOptions = ref<Option[]>([
   {
     text: 'License',
@@ -577,17 +598,5 @@ const showLoadingScreen = () => {
 <style lang="scss">
 button + button {
   margin-left: 20px;
-}
-.customDatepicker {
-  width: 261px;
-  .dp__input_icon_pad {
-    padding: 6px 10px;
-    background-color: #1a202c;
-  }
-  .dp__input_icon {
-    width: 20px;
-    height: 20px;
-    left: 75%;
-  }
 }
 </style>

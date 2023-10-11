@@ -27,25 +27,25 @@
       <img :class="{isShow: isShow}"
            @click.native="isShow = !isShow"
            class="toggle-icon"
-           src="~assets/images/arrow.png" alt="arrow">
+           src="~assets/images/arrow.svg" alt="arrow">
     </div>
     <div v-show="isShow">
       <div class="option-list">
         <template v-if="displayOptions.length">
-          <label v-for="(option, i) in displayOptions"
+          <div v-for="(option, i) in displayOptions"
                  :key="i"
                  :class="{isDisabled: option.isDisabled}"
-                 :for="`option-${id}-${i}`"
+                  @click="updateSelectedOptions(option)"
                  class="option-item"
           >
-            <input :id="`option-${id}-${i}`"
+            <input :id="`option-${id}-${option.code}`"
                    type="checkbox"
-                   class="tw-mr-1"
+                   class="tw-mr-1 tw-select-none tw-pointer-events-none"
+                   :checked="option.isChecked"
                    :class="{'tw-absolute tw-opacity-0': !isShowCheckBox}"
-                   @click="updateSelectedOptions($event, option)"
                    :disabled="option.isDisabled">
             <span class="option-item-text tw-block">{{ option.text ?? '---'}}</span>
-          </label>
+          </div>
         </template>
         <div v-else class="tw-py-1.5 tw-px-2.5 tw-text-sm">
           No data
@@ -57,12 +57,12 @@
 <script lang="ts" setup>
 import {onClickOutside} from "@vueuse/core";
 import {filteredOptions} from "~/utils/global";
-import {marked} from "marked";
 
 interface Option {
   text?: string,
   code?: number,
-  isDisabled?: boolean
+  isDisabled?: boolean,
+  isChecked?: boolean
 }
 
 interface IProps {
@@ -75,6 +75,7 @@ interface IProps {
 }
 interface IEmits {
   (e: "update:selectedOptions", value: Option[]): void;
+  (e: "update:options", value: Option[]): void;
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -83,19 +84,25 @@ const props = withDefaults(defineProps<IProps>(), {
 const emits = defineEmits<IEmits>()
 
 const selectedOptions = useVModel(props, 'selectedOptions', emits)
+const options = useVModel(props, 'options', emits)
+
 const isShow = ref<boolean>(false)
-const multipleSelect = ref<HTMLElement>(null)
+const multipleSelect = ref<HTMLElement>()
 const searchKey = ref<string>()
 const displayOptions = ref<Option[]>([])
 
-const updateSelectedOptions = (event: MouseEvent, option: Option) => {
-  if(event.target.checked){
+const updateSelectedOptions = (option: Option) => {
+  if(!option.isChecked){
     selectOption(option)
   } else {
     unSelectOption(option)
   }
 }
 const selectOption = (option: Option) => {
+  if (!selectedOptions.value || !options.value) return;
+  const selectedOptionIndex: number = options.value.findIndex((opt: Option) => opt.code === option.code )
+  options.value[selectedOptionIndex].isChecked = true
+
   if(selectedOptions.value.includes(option)){
     return
   }
@@ -103,17 +110,19 @@ const selectOption = (option: Option) => {
 }
 
 const unSelectOption = (option: Option) => {
-  const delIndex = props.options?.findIndex((opt) => opt.code === option.code )
-  const optionInput = document.getElementById(`option-${props.id}-${delIndex}`)
-  if (!optionInput) return
-  optionInput.checked = false
+  if (!options.value) return
+  const delOptionIndex: number = options.value.findIndex((opt: Option) => opt.code === option.code )
+  options.value[delOptionIndex].isChecked = false
+
+  if (!selectedOptions.value) return;
   selectedOptions.value = selectedOptions.value.filter((e)=>{
     return e.code !== option.code
   })
 }
 
 const searchOptions = () => {
-  let data: Option[] = [...props.options]
+  if (!options.value) return
+  let data: Option[] = [...options.value]
   if (searchKey.value) {
     const options = data.map(item => {
       return {
@@ -123,7 +132,7 @@ const searchOptions = () => {
     })
     displayOptions.value = filteredOptions(options, searchKey.value)
   } else {
-    displayOptions.value = [...props.options]
+    displayOptions.value = [...options.value]
   }
 }
 
@@ -132,12 +141,13 @@ watch(isShow, (val) => {
     onClickOutside(multipleSelect.value, () => {
       isShow.value = false
       searchKey.value = ''
-      displayOptions.value = [...props.options]
+      if (!options.value) return
+      displayOptions.value = [...options.value]
     })
   }
 })
 
-watch(() => props.options, (val) => {
+watch(() => options.value, (val) => {
   if (val) {
     displayOptions.value = [...val]
   }
