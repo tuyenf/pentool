@@ -15,7 +15,7 @@
       <the-multiple-select
           v-model:options="tags2"
           :id="'select2'"
-          :is-show-check-box="true"
+          :is-show-check-box="false"
           :selected-options="selectedOptions2"
           @update:selected-options="(newVal) => selectedOptions2 = newVal"
       >
