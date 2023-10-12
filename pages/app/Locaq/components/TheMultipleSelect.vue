@@ -1,7 +1,8 @@
 <template>
   <div :id="id" class="i-multiple-select" ref="multipleSelect">
     <div class="i-multiple-select-btn"
-         :class="{isDisable: isDisable}">
+         @click.native="isShow = true"
+         :class="{isDisable: isDisable, '!tw-rounded-bl-none !tw-rounded-br-none': isShow}">
       <div class="i-multiple-select-content">
         <ul v-if="selectedOptions.length" class="selected-option-list">
           <li  v-for="(option, i) in selectedOptions.slice(0, 3)"
@@ -15,22 +16,23 @@
                  src="~assets/images/del.png" alt="Delete">
           </li>
         </ul>
+        <span v-else-if="!selectedOptions.length && !isShow" class="virtual-placeholder">{{ placeholder }}</span>
         <span v-if="selectedOptions.length >=4" class="tw-text-sm">and {{selectedOptions.length - 3}} more</span>
         <input class="i-multiple-select-input"
                :class="{'tw-py-1.5': selectedOptions.length >=4}"
                @focus="isShow = true"
                v-model.trim="searchKey"
                @input="searchOptions"
-               v-if="!isDisable"
+               v-if="!isDisable && isShow"
                type="text" :placeholder="placeholder">
       </div>
       <img :class="{isShow: isShow}"
-           @click.native="isShow = !isShow"
+           @click.stop="isShow = !isShow"
            class="toggle-icon"
            src="~assets/images/arrow.svg" alt="arrow">
     </div>
     <div v-show="isShow">
-      <div class="option-list">
+      <div class="option-list" :style="{maxHeight: maxHeight + 'px'}">
         <template v-if="displayOptions.length">
           <div v-for="(option, i) in displayOptions"
                  :key="i"
@@ -71,7 +73,8 @@ interface IProps {
   isDisable?: boolean,
   placeholder?: string,
   isShowCheckBox?: boolean,
-  id?: string
+  id?: string,
+  maxHeight?: number
 }
 interface IEmits {
   (e: "update:selectedOptions", value: Option[]): void;
@@ -80,6 +83,7 @@ interface IEmits {
 
 const props = withDefaults(defineProps<IProps>(), {
   placeholder: 'Select',
+  maxHeight: 300
 })
 const emits = defineEmits<IEmits>()
 
@@ -209,14 +213,17 @@ watch(() => options.value, (val) => {
     border-top: 0;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
-    margin-top: -3px;
-    padding-top: 3px;
+    overflow-y: auto;
   }
   &-item {
     padding: 6px 10px;
     font-size: 14px;
     display: flex;
     align-items: center;
+    &:last-child {
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+    }
     &:not(.isDisabled) {
       cursor: pointer;
     }
@@ -270,5 +277,9 @@ watch(() => options.value, (val) => {
   &.isShow {
     transform: rotate(180deg);
   }
+}
+.virtual-placeholder {
+  color: gray;
+  font-size: 14px;
 }
 </style>

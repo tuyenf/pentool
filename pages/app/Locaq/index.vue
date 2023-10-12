@@ -8,6 +8,7 @@
           :selected-options="selectedOptions"
           @update:selected-options="(newVal) => selectedOptions = newVal"
           :id="'select1'"
+          :max-height="200"
           :is-show-check-box="true"
       >
       </the-multiple-select>

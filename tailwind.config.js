@@ -21,6 +21,7 @@ module.exports = {
       poppins: ["Poppins", "sans-serif"],
     },
     borderRadius: {
+      none: "0px",
       sm: "5px",
       DEFAULT: "10px",
       lg: "20px",
