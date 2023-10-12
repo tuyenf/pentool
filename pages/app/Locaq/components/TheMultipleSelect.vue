@@ -34,7 +34,7 @@
         <template v-if="displayOptions.length">
           <div v-for="(option, i) in displayOptions"
                  :key="i"
-                 :class="{isDisabled: option.isDisabled}"
+                 :class="{isDisabled: option.isDisabled, isSelected: option.isChecked}"
                   @click="updateSelectedOptions(option)"
                  class="option-item"
           >
@@ -226,6 +226,12 @@ watch(() => options.value, (val) => {
     &.isDisabled {
       opacity: 0.8;
       color: gray;
+    }
+    &.isSelected {
+      background-color: lightgray;
+      &:hover {
+        background-color: #AFAFAF;
+      }
     }
   }
 }
