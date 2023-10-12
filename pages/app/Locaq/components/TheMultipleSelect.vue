@@ -16,14 +16,13 @@
                  src="~assets/images/del.png" alt="Delete">
           </li>
         </ul>
-        <span v-else-if="!selectedOptions.length && !isShow" class="virtual-placeholder">{{ placeholder }}</span>
         <span v-if="selectedOptions.length >=4" class="tw-text-sm">and {{selectedOptions.length - 3}} more</span>
         <input class="i-multiple-select-input"
                :class="{'tw-py-1.5': selectedOptions.length >=4}"
                @focus="isShow = true"
                v-model.trim="searchKey"
                @input="searchOptions"
-               v-if="!isDisable && isShow"
+               v-if="!isDisable && isShow || !isShow && !selectedOptions.length"
                type="text" :placeholder="placeholder">
       </div>
       <img :class="{isShow: isShow}"
@@ -277,9 +276,5 @@ watch(() => options.value, (val) => {
   &.isShow {
     transform: rotate(180deg);
   }
-}
-.virtual-placeholder {
-  color: gray;
-  font-size: 14px;
 }
 </style>

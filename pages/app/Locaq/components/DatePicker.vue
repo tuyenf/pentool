@@ -66,7 +66,7 @@ watch(range, (val) => {
   span.dp__input_icon,
   .dp__clear_icon {
     top: unset;
-    bottom: 13px;
+    bottom: 11px;
     transform: translateY(0);
   }
   span.dp__input_icon {
