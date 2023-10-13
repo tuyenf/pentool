@@ -19,7 +19,7 @@
         <span v-if="selectedOptions.length >=4" class="tw-text-sm">and {{selectedOptions.length - 3}} more</span>
         <input class="i-multiple-select-input"
                :class="{'tw-py-1.5': selectedOptions.length >=4}"
-               @focus="isShow = true"
+               ref="searchInput"
                v-model.trim="searchKey"
                @input="searchOptions"
                v-if="!isDisable && isShow || !isShow && !selectedOptions.length"
@@ -93,6 +93,8 @@ const isShow = ref<boolean>(false)
 const multipleSelect = ref<HTMLElement>()
 const searchKey = ref<string>()
 const displayOptions = ref<Option[]>([])
+const searchInput = ref<HTMLElement>()
+const { focused: inputFocus } = useFocus(searchInput, { initialValue: true })
 
 const updateSelectedOptions = (option: Option) => {
   if(!option.isChecked){
@@ -141,20 +143,31 @@ const searchOptions = () => {
 
 watch(isShow, (val) => {
   if (val) {
+    inputFocus.value = true
     onClickOutside(multipleSelect.value, () => {
       isShow.value = false
       searchKey.value = ''
       if (!options.value) return
       displayOptions.value = [...options.value]
     })
+  } else {
+    inputFocus.value = false
   }
-})
+}, {immediate: true})
 
 watch(() => options.value, (val) => {
   if (val) {
     displayOptions.value = [...val]
   }
 }, {deep: true, immediate: true})
+
+watch(inputFocus, (focused) => {
+  if (!focused && isShow.value) {
+    inputFocus.value = true
+  } else if (!isShow.value) {
+    inputFocus.value = false
+  }
+}, {immediate: true})
 </script>
 <style lang="scss">
 .i-multiple-select {
