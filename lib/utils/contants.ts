@@ -1,3 +1,5 @@
+import {IPoitItem} from "~/lib/types/common";
+
 export const enum KEY_BOARD {
   BACK_SPACE = "Backspace",
   DELETE = "Delete",
