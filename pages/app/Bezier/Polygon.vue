@@ -10,7 +10,7 @@
      @click="activePolygon(i)"
   >
     <defs>
-      <template v-if="polygon.colors.fill.type === GRADIENT_TYPE.LINEAR">
+      <template v-if="polygon.colors.fill.isGradient && polygon.colors.fill.type === GRADIENT_TYPE.LINEAR">
         <linearGradient  :id="`background-${i}`"
                          :x1="getPosition(polygon, 'x1')" :y1="getPosition(polygon, 'y1')" :x2="getPosition(polygon, 'x2')" :y2="getPosition(polygon, 'y2')"
                          gradientUnits="userSpaceOnUse"
@@ -33,7 +33,7 @@
           </stop>
         </radialGradient>
       </template>
-      <template v-if="polygon.colors.stroke.type === GRADIENT_TYPE.LINEAR">
+      <template v-if="polygon.colors.stroke.isGradient && polygon.colors.stroke.type === GRADIENT_TYPE.LINEAR">
         <linearGradient  :id="`stroke-${i}`"
                          :x1="getPosition(polygon, 'x1')" :y1="getPosition(polygon, 'y1')" :x2="getPosition(polygon, 'x2')" :y2="getPosition(polygon, 'y2')"
                          :gradientTransform="`rotate(${polygon.colors.stroke.degree})`"

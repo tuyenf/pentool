@@ -28,6 +28,7 @@ img {
   &-container {
     @include size(100vw, 100vh);
     display: flex;
+    background-color: #1A202C;
   }
   &-panel {
     width: var(--panel-width);
