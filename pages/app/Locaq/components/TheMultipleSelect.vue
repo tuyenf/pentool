@@ -245,6 +245,8 @@ watch(inputFocus, (focused) => {
     &.isDisabled {
       opacity: 0.8;
       color: gray;
+      user-select: none;
+      pointer-events: none;
     }
     &.isSelected {
       background-color: lightgray;
