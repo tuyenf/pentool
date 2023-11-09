@@ -6,7 +6,7 @@
             isSelected: targetPolygonIndex === i,
             isMoving: targetPolygonIndex === i && isMoveAPolygon,
           }"
-     @mousedown="handleMouseDownPolygon($event)"
+     @mousedown="handleMouseDownPolygon"
      @click="activePolygon(i)"
   >
     <defs>
@@ -166,7 +166,7 @@
 </template>
 <script lang="ts" setup>
 import BezierBoundingBox from "~/pages/app/Bezier/BoundingBox.vue"
-import {onClickOutside, useKeyModifier} from "@vueuse/core";
+import {MaybeElementRef, onClickOutside, useKeyModifier} from "@vueuse/core";
 import {GRADIENT_TYPE, KEY_BOARD} from "~/lib/utils/contants";
 import {bezierMinMax, getMinMaxValue} from "~/lib/utils/global";
 import {CommonModule} from "~/lib/types/common";
@@ -239,14 +239,14 @@ const isAlt = useKeyModifier(KEY_BOARD.ALT)
 onMounted(() => {
   nextTick(() => {
     const svg = document.getElementById('workspace')
-    svg.addEventListener('mouseup', handleMouseUp)
+    if (svg) svg.addEventListener('mouseup', handleMouseUp)
   })
 })
 onUpdated(() => {
   const polygon = document.querySelectorAll('.polygon')
   if (!polygon) return
-  _forEach(polygon, (p: CommonModule.Polygon) => {
-    onClickOutside(p, (event: any) => {
+  _forEach(polygon, p => {
+    onClickOutside(p, (event: MouseEvent) => {
       if (!props.onDirectSelectionTool && !props.onSelectionTool) return
       const resetVal = _debounce( () => isResizing.value = false, 500)
       if (isResizing.value) {
@@ -258,7 +258,7 @@ onUpdated(() => {
     })
   })
 })
-const getPosition = (polygon: CommonModule.Polygon, axis?: string = 'x1') => {
+const getPosition = (polygon: CommonModule.Polygon, axis: string = 'x1') => {
   let points: CommonModule.MinMax[] = [];
   _forEach(polygon.segments, (segment) => {
     points.push(bezierMinMax(
@@ -284,12 +284,13 @@ const getPosition = (polygon: CommonModule.Polygon, axis?: string = 'x1') => {
     return getMinMaxValue(points, true, "min", "x");
   }
 }
-const checkIsShowEditor = (id: number, i: number, isRect?: boolean = false, index?: number) => {
-  if (props.onPenTool && id === targetPolygonIndex.value) return false
+const checkIsShowEditor = (id: number, i: number, isRect: boolean = false, index?: number) => {
+  let targetRect: number = targetPoint.value ?? 0
 
-  let targetRect = targetPoint.value
-  if (tempActiveRect.value >= 0) targetRect = tempActiveRect.value
-  else if (activeRect.value >= 0) targetRect = activeRect.value
+  if (!props.onPenTool) {
+    if (tempActiveRect.value >= 0) targetRect = tempActiveRect.value
+    else if (activeRect.value >= 0) targetRect = activeRect.value
+  }
 
   const totalNodes = polygon.value && polygon.value.nodes.length || 0
   if (!totalNodes) return true
@@ -498,10 +499,10 @@ const updateNewPosition = () => {
     if (node.rect.x !== node.lines[0].x1) node.rect.x = node.lines[0].x1;
     if (node.rect.y !== node.lines[0].y1) node.rect.y = node.lines[0].y1;
   });
-  const polygonElement: HTMLElement = document.getElementById(
+  const polygonElement: HTMLElement | null = document.getElementById(
       `polygon-${targetPolygonIndex.value}`,
   );
-  const boundingBox: HTMLElement = document.getElementById('bounding-box')
+  const boundingBox: HTMLElement | null = document.getElementById('bounding-box')
   if (!(polygonElement && boundingBox)) return;
   polygonElement.style.transform = "translate(0px, 0px)";
   boundingBox.style.transform = "translate(0px, 0px)";
@@ -578,9 +579,11 @@ const moveAController = (e: MouseEvent) => {
   }
 };
 const moveAPolygon = async (e: any) => {
-  const polygonElement: HTMLElement = document.getElementById(
+  const polygonElement: HTMLElement | null = document.getElementById(
       `polygon-${targetPolygonIndex.value}`,
   );
+  if (!polygonElement) return
+
   if (!polygonElement.contains(e.target)) {
     await handleMouseUp()
     isReCalcBoundingBox.value = true
@@ -611,8 +614,8 @@ const moveAPolygon = async (e: any) => {
   if (!fixedPolygonPosition.value.y) fixedPolygonPosition.value.y = pointerPosition.y;
 
   if (!fixedPolygonPosition.value.spaceX && !fixedPolygonPosition.value.spaceY) return;
-  const polygon: HTMLElement = document.getElementById(`polygon-${targetPolygonIndex.value}`);
-  const boundingBoxEl: HTMLElement = document.getElementById('bounding-box')
+  const polygon: HTMLElement | null = document.getElementById(`polygon-${targetPolygonIndex.value}`);
+  const boundingBoxEl: HTMLElement | null = document.getElementById('bounding-box')
   if (!(polygon && boundingBoxEl)) return;
   polygon.style.transform = `translate(${fixedPolygonPosition.value.spaceX}px, ${fixedPolygonPosition.value.spaceY}px)`;
   boundingBoxEl.style.transform = `translate(${fixedPolygonPosition.value.spaceX}px, ${fixedPolygonPosition.value.spaceY}px)`;

@@ -316,7 +316,7 @@ const swapColor = () => {
 
   changePolygonColor()
 }
-const changeColorMode = (type?: string = FILL_TYPES.DEFAULT) => {
+const changeColorMode = (type: string = FILL_TYPES.DEFAULT) => {
   isActive.value = type
   if (type === FILL_TYPES.COLOR) {
     if (isFill.value) {
@@ -367,7 +367,7 @@ const changePolygonColor = () => {
   polygon.value.colors.fill = selectedBackgroundColor.value
   polygon.value.colors.stroke = selectedStrokeColor.value
 }
-const activeFill = (fill?: boolean = false) => {
+const activeFill = (fill: boolean = false) => {
   isFill.value = fill
   if (fill) {
     isActive.value = selectedBackgroundColor.value.style === FILL_TYPES.DEFAULT ? isActive.value = FILL_TYPES.DEFAULT : selectedBackgroundColor.value.isGradient ? FILL_TYPES.GRADIENT : FILL_TYPES.COLOR
@@ -399,31 +399,6 @@ const deleteTemplate = (index: number) => {
   isRequestSubmit.value = false
 }
 
-/*watch(polygon, (val) => {
-  if (val && polygon.value) {
-    if (polygon.value.strokeColor === FILL_TYPES.DEFAULT) {
-      polygon.value.strokeColor = selectedStrokeColor.value.color
-    }
-    if (polygon.value.backgroundColor === FILL_TYPES.DEFAULT) {
-      polygon.value.backgroundColor = selectedBackgroundColor.value.color
-    }
-  }
-}, {deep: true})
-
-watch(() => polygon.value?.strokeColor, (val) => {
-  if (val && polygon.value?.strokeColor !== FILL_TYPES.DEFAULT) {
-    isFill.value = false
-    selectedStrokeColor.value.color = polygon.value?.strokeColor ?? FILL_TYPES.DEFAULT
-    recentColor.value.color = polygon.value?.strokeColor ?? FILL_TYPES.DEFAULT
-  }
-})
-watch(() => polygon.value?.backgroundColor, (val) => {
-  if (val && polygon.value?.backgroundColor !== FILL_TYPES.DEFAULT) {
-    isFill.value = true
-    selectedBackgroundColor.value.color = polygon.value?.backgroundColor ?? FILL_TYPES.DEFAULT
-    recentColor.value.color = polygon.value?.backgroundColor ?? FILL_TYPES.DEFAULT
-  }
-})*/
 </script>
 <style lang="scss" scoped>
 .notClick {

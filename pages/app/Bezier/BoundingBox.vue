@@ -40,7 +40,7 @@
 </template>
 <script lang="ts" setup>
 import {getMinMaxValue, bezierMinMax} from "~/lib/utils/global";
-import {StorageService} from "~/lib/utils/StorageService";
+import {CommonModule} from "~/lib/types/common";
 interface IProps {
   targetPolygonIndex?: number | null,
   polygons?: CommonModule.Polygon[],
@@ -138,10 +138,10 @@ const createBoundingBox = () => {
         ),
     );
   });
-  const minX = getMinMaxValue(points, true, "min", "x");
-  const maxX = getMinMaxValue(points, false, "max", "x");
-  const minY = getMinMaxValue(points, true, "min", "y");
-  const maxY = getMinMaxValue(points, false, "max", "y");
+  const minX = getMinMaxValue(points, true, "min", "x") ?? 0;
+  const maxX = getMinMaxValue(points, false, "max", "x") ?? 0;
+  const minY = getMinMaxValue(points, true, "min", "y") ?? 0;
+  const maxY = getMinMaxValue(points, false, "max", "y") ?? 0;
 
   const middleX = maxX - (maxX - minX) / 2;
   const middleY = maxY - (maxY - minY) / 2;
@@ -194,7 +194,7 @@ const calcSegmentBoudingBox = () => {
 };
 const resizeBoundingBox = (e: any) => {
   isMoveAPolygon.value = false;
-  const workspaceEl: HTMLElement = document.getElementById('workspace')
+  const workspaceEl: HTMLElement | null = document.getElementById('workspace')
   if (!workspaceEl) return
   const workspacePosition = workspaceEl.getBoundingClientRect()
   const limits: CommonModule.Limit = {
@@ -209,10 +209,10 @@ const resizeBoundingBox = (e: any) => {
     y: Math.max(limits.minY, Math.min(e.clientY ? e.clientY - workspacePosition.top : e.offsetY, limits.maxY)),
   };
 
-  let spaceX = handlerIndex.value > 0
+  let spaceX = handlerIndex.value && handlerIndex.value > 0
       ? (newPosition.x - boundingBox.value.handlers[handlerIndex.value - 1].x) / 2
       : 0;
-  let spaceY = handlerIndex.value > 0
+  let spaceY = handlerIndex.value && handlerIndex.value > 0
       ? (newPosition.y - boundingBox.value.handlers[handlerIndex.value - 1].y) / 2
       : 0;
 
@@ -310,6 +310,8 @@ const resizeBoundingBox = (e: any) => {
 };
 const resizePolygon = () => {
   let points: CommonModule.MinMax[] = [];
+  if (!polygon.value) return;
+
   _forEach(polygon.value.segments, (segment) => {
     points.push(
         bezierMinMax(
@@ -324,21 +326,21 @@ const resizePolygon = () => {
         ),
     );
   });
-  const minX = getMinMaxValue(points, true, "min", "x");
-  const maxX = getMinMaxValue(points, false, "max", "x");
-  const minY = getMinMaxValue(points, true, "min", "y");
-  const maxY = getMinMaxValue(points, false, "max", "y");
+  const minX = getMinMaxValue(points, true, "min", "x") ?? 0;
+  const maxX = getMinMaxValue(points, false, "max", "x") ?? 0;
+  const minY = getMinMaxValue(points, true, "min", "y") ?? 0;
+  const maxY = getMinMaxValue(points, false, "max", "y") ?? 0;
 
-  const minx = getMinMaxValue(boundingBox.value.handlers, true, "", "x");
-  const maxx = getMinMaxValue(boundingBox.value.handlers, false, "", "x");
-  const miny = getMinMaxValue(boundingBox.value.handlers, true, "", "y");
-  const maxy = getMinMaxValue(boundingBox.value.handlers, false, "", "y");
+  const minx = getMinMaxValue(boundingBox.value.handlers, true, "", "x") ?? 0;
+  const maxx = getMinMaxValue(boundingBox.value.handlers, false, "", "x") ?? 0;
+  const miny = getMinMaxValue(boundingBox.value.handlers, true, "", "y") ?? 0;
+  const maxy = getMinMaxValue(boundingBox.value.handlers, false, "", "y") ?? 0;
 
 
-  const numeratorX = (maxx - minx).toFixed(12)
-  const denominatorX = (maxX - minX).toFixed(12)
-  const numeratorY = (maxy - miny).toFixed(12)
-  const denominatorY = (maxY - minY).toFixed(12)
+  const numeratorX: number = parseFloat((maxx - minx).toFixed(12))
+  const denominatorX: number = parseFloat((maxX - minX).toFixed(12))
+  const numeratorY: number =  parseFloat((maxy - miny).toFixed(12))
+  const denominatorY: number =  parseFloat((maxY - minY).toFixed(12))
 
   let xScale = numeratorX / denominatorX
   let yScale = numeratorY / denominatorY
@@ -390,7 +392,7 @@ const resizePolygon = () => {
   });
 
   // Translate the polygon back to its original position
-  const fixedNodes = [].concat(polygon.value.nodes);
+  const fixedNodes = [].concat(polygon.value?.nodes);
   polygon.value.nodes = scaledNodes.map((node, i) => {
     node.rect.x += newCenterX;
     node.rect.y += newCenterY;
@@ -413,7 +415,8 @@ const resizePolygon = () => {
   });
 };
 
-const updateSegments = (node: CommonModule.Point, nodeIndex: number, fixedNodes: Node[]) => {
+const updateSegments = (node: CommonModule.Point, nodeIndex: number, fixedNodes: CommonModule.Node[]) => {
+  if (!polygon.value) return
   const newPosition = {x: node.x, y: node.y,};
   const segments = polygon.value.segments
   const nodes = polygon.value.nodes
@@ -480,8 +483,8 @@ const updateSegments = (node: CommonModule.Point, nodeIndex: number, fixedNodes:
 const drawSpeechBubble = () => {
   if (targetPolygonIndex.value === -1 || !props.onDrawSpeechBubble) return;
   // Move polygon to new position
-  const virtualRectangleElement: HTMLElement = document.getElementById('virtualRectangle')
-  const workspace: HTMLElement = document.getElementById('workspace')
+  const virtualRectangleElement: HTMLElement | null = document.getElementById('virtualRectangle')
+  const workspace: HTMLElement | null = document.getElementById('workspace')
   if (!(virtualRectangleElement && workspace)) return
   let elVal = JSON.parse(JSON.stringify(virtualRectangleElement.getBoundingClientRect()))
   const boundingEl = JSON.parse(JSON.stringify(workspace.getBoundingClientRect()))
@@ -598,7 +601,7 @@ const updateNewPosition = () => {
     if (node.rect.x !== node.lines[0].x1) node.rect.x = node.lines[0].x1;
     if (node.rect.y !== node.lines[0].y1) node.rect.y = node.lines[0].y1;
   });
-  const polygonElement: HTMLElement = document.getElementById(
+  const polygonElement: HTMLElement | null = document.getElementById(
       `polygon-${targetPolygonIndex.value}`,
   );
   if (!polygonElement || !boundingElement.value) return;

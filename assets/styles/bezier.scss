@@ -273,15 +273,10 @@ img {
 rect.isEditing:hover,
 circle.isEditing:hover {
   fill: #4e7fff !important;
+  cursor: url("@/assets/images/mouse.png") 4 0,
+          crosshair;
 }
 rect {
-  &.isEditing {
-    &:hover {
-      cursor:
-        url("@/assets/images/mouse.png") 4 0,
-        crosshair;
-    }
-  }
   &.ns-resize {
     &:hover {
       cursor: ns-resize;
