@@ -463,7 +463,7 @@ const undo = () => {
     polygons.value.pop();
     createNewPolygon.value = true
     isDrawing.value = false
-  }undo
+  }
 };
 const checkUndoWithKeyBoard = () => {
   const userAgent = window.navigator.userAgent;

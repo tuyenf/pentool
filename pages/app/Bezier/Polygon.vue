@@ -285,6 +285,8 @@ const getPosition = (polygon: CommonModule.Polygon, axis?: string = 'x1') => {
   }
 }
 const checkIsShowEditor = (id: number, i: number, isRect?: boolean = false, index?: number) => {
+  if (props.onPenTool && id === targetPolygonIndex.value) return false
+
   let targetRect = targetPoint.value
   if (tempActiveRect.value >= 0) targetRect = tempActiveRect.value
   else if (activeRect.value >= 0) targetRect = activeRect.value
