@@ -1,8 +1,5 @@
 <template>
-  <div>
-    <nuxt-link to="/app/bezier">Bezier</nuxt-link>
-    <router-view/>
-  </div>
+  <router-view/>
 </template>
 <script lang="ts" setup>
 const router = useRouter()
